@@ -709,13 +709,22 @@ func TestCustomMultipleFormula(t *testing.T) {
 
 
 str := `
-area1 = $RND(Math.sqrt($SUMF($RND(2*3,2), $RND(3*4,2), $RND(4*5,2))), 10);
-area2 = $CIRCLE(5);
+area1 = $RND(Math.sqrt($SUMF($RND(a*3,2), $RND(b*4,2), $RND(c*5,2))), 10);
+area2 = $CIRCLE(radius);
+console.log("a="+a);
+console.log("b="+b);
+console.log("c="+c);
+console.log("radius="+radius);
 `
 	c, err := f.LoadContext(nil, str)
 	if err != nil {
 		t.Error(err)
 	}
+
+	c.Set("a", 2)
+	c.Set("b", 3)
+	c.Set("c", 4)
+	c.Set("radius", 5)
 
 	_, runtimeError := c.Run(str)
 	if runtimeError != nil {

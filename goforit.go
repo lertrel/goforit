@@ -182,6 +182,16 @@ func (c FormulaContext) Get(varname string) (JSValue, error) {
 	}
 }
 
+func (c FormulaContext) Set(varname string, value interface{}) error {
+	
+	err := c.vm.Set(varname, value)
+	if err != nil {
+		return err
+	} else {
+		return nil
+	}
+}
+
 func (c FormulaContext) debug(format string, args ...interface{}) {
 	debug(DEBUG || c.Debug, format, args...)
 }
