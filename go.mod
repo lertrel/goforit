@@ -1,4 +1,4 @@
-module github.com/lertrel/formula
+module github.com/lertrel/goforit
 
 go 1.15
 
