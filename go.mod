@@ -1,4 +1,4 @@
-module goforit
+module github.com/lertrel/goforit
 
 go 1.15
 
