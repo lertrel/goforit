@@ -1,216 +1,25 @@
 package goforit
 
 import (
+	"errors"
 	"fmt"
 	"log"
-	"errors"
-	"strconv"
-	"regexp"
 	"math"
 	"math/big"
+	"regexp"
+	"strconv"
+
 	"github.com/robertkrimen/otto"
 )
 
-var DEBUG = false
+var debugFlag = false
 
-type Formula struct {
-	
-	r *regexp.Regexp
-	customFuncs map[string]string
-	Debug bool
-}
-
+//Get An entry point to obtain Formula
 func Get() Formula {
 
 	r, _ := regexp.Compile("(\\$[^\\$()\\s]+)\\(")
 
 	return Formula{r: r, customFuncs: make(map[string]string), Debug: false}
-}
-
-func (f Formula) debug(format string, args ...interface{}) {
-	debug(DEBUG || f.Debug, format, args...)
-}
-
-func (f *Formula) RegisterCustomFunction(funcName string, body string) bool {
-
-	_, found := f.customFuncs[funcName]
-
-	f.customFuncs[funcName] = body
-
-	return found
-}
-
-func (f Formula) GetCustomFuncBody(funcName string) string {
-
-	body, found := f.customFuncs[funcName]
-
-	if found {
-		return body
-	} else {
-		return ""
-	}
-}
-
-func (f Formula) extractFunctionListFromFormulaString(formulaStr string) []string {
-
-	matches := f.r.FindAllStringSubmatch(formulaStr, -1)
-	dedupMatches := make(map[string]bool)
-
-	for i := 0; i < len(matches); i++ {
-		dedupMatches[matches[i][1]] = true
-	}
-
-	funArr := make([]string, len(dedupMatches))
-
-	i := 0
-	for k, _ := range dedupMatches {
-		funArr[i] = k
-		i++
-	}
-
-	return funArr
-}
-
-func (f Formula) LoadContext(context *FormulaContext, formulaStr string) (c *FormulaContext, err error) {
-
-	// defer func() {
-	// 	if r := recover(); r != nil {
-	// 		c = nil
-	// 		err = r.(error)
-	// 	}
-	// }()	
-	
-	if context == nil {
-		// context = &	FormulaContext{vm: otto.New()}
-		context = &FormulaContext{vm: otto.New(), loadedFuncs: make(map[string] bool), Debug: f.Debug}
-	}
-
-	f.debug("Formula.LoadContext() - Extracting function names from %v", formulaStr)
-	funcList := f.extractFunctionListFromFormulaString(formulaStr)
-
-	for i := 0; i < len(funcList); i++ {
-
-		f.debug("Formula.LoadContext() - funcList[i]=%v", funcList[i])
-		err := f.injectFuncToContext(context, funcList[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return context, nil
-}
-
-func (f Formula) injectFuncToContext(context *FormulaContext, funcName string) error {
-
-	f.debug("Formula.injectFuncToContext() started ...")
-
-	if context.isFuncLoaded(funcName) {
-		return nil
-	}
-
-	if fn := getBuilinFunc(funcName); fn != nil {
-		context.markFuncAsLoaded(funcName, false)
-		fn(context)
-		context.markFuncAsLoaded(funcName, true)
-
-		return nil
-	}
-
-	if body := f.GetCustomFuncBody(funcName); body != "" {
-
-		f.debug("Formula.injectFuncToContext() - body=%v", body)
-		context.markFuncAsLoaded(funcName, false)
-		funcList := f.extractFunctionListFromFormulaString(body)
-
-		for i := 0; i < len(funcList); i++ {
-
-			f.debug("Formula.injectFuncToContext() - funcList[i]=%v", funcList[i])
-			subFunc := funcList[i]
-			if subFunc != funcName {			
-				err := f.injectFuncToContext(context, subFunc)
-				if err != nil {
-					return err
-				}
-			}
-		}
-
-		context.markFuncAsLoaded(funcName, true)
-
-		_, err := context.Run(body)
-		if err != nil {
-			return err
-		}
-
-	}
-
-	f.debug("Formula.injectFuncToContext() ended ...")
-
-	return nil
-}
-
-
-
-type FormulaContext struct {
-
-	vm *otto.Otto
-	loadedFuncs map[string]bool
-	Debug bool
-}
-
-// func (c FormulaContext) GetVM() *otto.Otto {
-	
-// 	return c.vm
-// }
-
-func (c FormulaContext) Run(formulaString string) (JSValue, error) {
-	
-	value, err := c.vm.Run(formulaString)
-	if err != nil {
-		return JSValue{}, err
-	} else {
-		return JSValue{impl: value}, nil
-	}
-}
-
-func (c FormulaContext) Get(varname string) (JSValue, error) {
-	
-	value, err := c.vm.Get(varname)
-	if err != nil {
-		return JSValue{}, err
-	} else {
-		return JSValue{impl: value}, nil
-	}
-}
-
-func (c FormulaContext) Set(varname string, value interface{}) error {
-	
-	err := c.vm.Set(varname, value)
-	if err != nil {
-		return err
-	} else {
-		return nil
-	}
-}
-
-func (c FormulaContext) debug(format string, args ...interface{}) {
-	debug(DEBUG || c.Debug, format, args...)
-}
-
-func (c FormulaContext) isFuncLoaded(funcName string) bool {
-
-	_, found := c.loadedFuncs[funcName]
-
-	c.debug("FormulaContext.isFuncLoaded() - c.loadedFunc=%v", c.loadedFuncs)
-	c.debug("FormulaContext.isFuncLoaded() - found=%v", found)
-
-	return found
-}
-
-func (c *FormulaContext) markFuncAsLoaded(funcName string, loaded bool) {
-
-	c.debug("FormulaContext.markFuncAsLoaded(before) - c.loadedFunc=%v", c.loadedFuncs)	
-	c.loadedFuncs[funcName] = loaded
-	c.debug("FormulaContext.markFuncAsLoaded(after) - c.loadedFunc=%v", c.loadedFuncs)
 }
 
 func debug(b bool, format string, args ...interface{}) {
@@ -283,7 +92,7 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 	switch funcName {
 
 	case "$ABS":
-		return func (context *FormulaContext) {
+		return func(context *FormulaContext) {
 
 			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
 
@@ -296,7 +105,7 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 			})
 		}
 	case "$RND":
-		return func (context *FormulaContext) {
+		return func(context *FormulaContext) {
 
 			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
 
@@ -304,7 +113,7 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 
 				v := getJSFloat(call, 0)
 				p := getJSInt(call, 1)
-				if 0 > p || p > 10  {
+				if 0 > p || p > 10 {
 					panic(errors.New("$RND - second parameter should be between 0 and 10"))
 				}
 
@@ -316,7 +125,7 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 			})
 		}
 	case "$FLOOR", "$FLR":
-		return func (context *FormulaContext) {
+		return func(context *FormulaContext) {
 
 			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
 
@@ -324,7 +133,7 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 
 				v := getJSFloat(call, 0)
 				p := getJSInt(call, 1)
-				if 0 > p || p > 10  {
+				if 0 > p || p > 10 {
 					panic(errors.New("$RND - second parameter should be between 0 and 10"))
 				}
 
@@ -336,7 +145,7 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 			})
 		}
 	case "$CEIL":
-		return func (context *FormulaContext) {
+		return func(context *FormulaContext) {
 
 			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
 
@@ -344,7 +153,7 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 
 				v := getJSFloat(call, 0)
 				p := getJSInt(call, 1)
-				if 0 > p || p > 10  {
+				if 0 > p || p > 10 {
 					panic(errors.New("$RND - second parameter should be between 0 and 10"))
 				}
 
@@ -356,7 +165,7 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 			})
 		}
 	case "$IF":
-		return func (context *FormulaContext) {
+		return func(context *FormulaContext) {
 
 			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
 
@@ -375,7 +184,7 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 			})
 		}
 	case "$SUMI":
-		return func (context *FormulaContext) {
+		return func(context *FormulaContext) {
 
 			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
 
@@ -393,14 +202,14 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 			})
 		}
 	case "$SUMF":
-		return func (context *FormulaContext) {
+		return func(context *FormulaContext) {
 
 			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
 
 				var result float64
 				result = 0.0
 
-				for i :=0; i < len(call.ArgumentList); i++ {
+				for i := 0; i < len(call.ArgumentList); i++ {
 
 					v := getJSFloat(call, i)
 					result = result + v
@@ -411,7 +220,7 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 			})
 		}
 	case "$AVG":
-		return func (context *FormulaContext) {
+		return func(context *FormulaContext) {
 
 			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
 
@@ -435,14 +244,14 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 			})
 		}
 	case "$MIN":
-		return func (context *FormulaContext) {
+		return func(context *FormulaContext) {
 
 			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
 
 				hasLast := false
 				var last otto.Value = otto.Value{}
 
-				for i :=0; i < len(call.ArgumentList); i++ {
+				for i := 0; i < len(call.ArgumentList); i++ {
 
 					v := call.ArgumentList[i]
 
@@ -456,7 +265,7 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 						if el != nil {
 							panic(el)
 						}
-						if (er != nil) {
+						if er != nil {
 							panic(er)
 						}
 
@@ -471,14 +280,14 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 			})
 		}
 	case "$MAX":
-		return func (context *FormulaContext) {
+		return func(context *FormulaContext) {
 
 			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
 
 				hasLast := false
 				var last otto.Value = otto.Value{}
 
-				for i :=0; i < len(call.ArgumentList); i++ {
+				for i := 0; i < len(call.ArgumentList); i++ {
 
 					v := call.ArgumentList[i]
 
@@ -492,7 +301,7 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 						if el != nil {
 							panic(el)
 						}
-						if (er != nil) {
+						if er != nil {
 							panic(er)
 						}
 
@@ -510,76 +319,4 @@ func getBuilinFunc(funcName string) func(context *FormulaContext) {
 		return nil
 
 	}
-}
-
-
-type JSValue struct {
-	impl otto.Value
-}
-
-// func (this JSValue) ToValue(value interface{}) (JSValue, error) {
-	
-// 	impl, err := this.impl.ToValue(value)
-
-// 	return JSValue{impl: impl}, err
-// }
-
-func (this JSValue) IsDefined() bool {
-	return this.impl.IsDefined()
-}
-
-func (this JSValue) IsUndefined() bool {
-	return this.impl.IsUndefined()
-}
-
-func (this JSValue) IsNull() bool {
-	return this.impl.IsNull()
-}
-
-func (this JSValue) IsPrimitive() bool {
-	return this.impl.IsPrimitive()
-}
-
-func (this JSValue) IsBoolean() bool {
-	return this.impl.IsBoolean()
-}
-
-func (this JSValue) IsNumber() bool {
-	return this.impl.IsNumber()
-}
-
-func (this JSValue) IsNaN() bool {
-	return this.impl.IsNaN()
-}
-
-func (this JSValue) IsString() bool {
-	return this.impl.IsString()
-}
-
-func (this JSValue) IsObject() bool {
-	return this.impl.IsObject()
-}
-
-func (this JSValue) IsFunction() bool {
-	return this.impl.IsFunction()
-}
-
-func (this JSValue) ToBoolean() (bool, error) {
-	return this.impl.ToBoolean()
-}
-
-func (this JSValue) ToFloat() (float64, error) {
-	return this.impl.ToFloat()
-}
-
-func (this JSValue) ToInteger() (int64, error) {
-	return this.impl.ToInteger()
-}
-
-func (this JSValue) ToString() (string, error) {
-	return this.impl.ToString()
-}
-
-func (this JSValue) Export() (interface{}, error) {
-	return this.impl.Export()
 }
