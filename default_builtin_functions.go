@@ -10,6 +10,37 @@ import (
 type DefaultBuiltInFunctions struct {
 }
 
+func (fs DefaultBuiltInFunctions) Has(funcName string) bool {
+
+	switch funcName {
+
+	case "$ABS":
+		return true
+	case "$RND":
+		return true
+	case "$FLOOR", "$FLR":
+		return true
+	case "$CEIL":
+		return true
+	case "$IF":
+		return true
+	case "$SUMI":
+		return true
+	case "$SUMF":
+		return true
+	case "$AVG":
+		return true
+	case "$MIN":
+		return true
+	case "$MAX":
+		return true
+	default:
+		return false
+
+	}
+
+}
+
 func (fs DefaultBuiltInFunctions) Execute(funcName string, vm VM, funcDef interface{}) (interface{}, bool) {
 
 	switch funcName {

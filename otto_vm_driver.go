@@ -12,16 +12,20 @@ var r, _ = regexp.Compile("(\\$[^\\$()\\s]+)\\(")
 
 type OttoVMDriver struct {
 	templateVM VM
+	funcs      map[int]BuiltInFunctions
 }
 
 func (d OttoVMDriver) Get() (VM, error) {
 
 	if d.templateVM != nil {
-		return OttoVM{vm: d.templateVM.(OttoVM).vm.Copy()}, nil
+
+		nativeVM := d.templateVM.(OttoVM)
+
+		return OttoVM{vm: nativeVM.vm.Copy(), funcs: nativeVM.funcs}, nil
 	}
 
 	//Falls through
-	return OttoVM{vm: otto.New()}, nil
+	return OttoVM{vm: otto.New(), funcs: d.funcs}, nil
 }
 
 func (d *OttoVMDriver) SetTemplate(template VM) {
@@ -49,7 +53,8 @@ func (d OttoVMDriver) ExtractFunctionListFromFormulaString(formulaStr string) []
 }
 
 type OttoVM struct {
-	vm *otto.Otto
+	vm    *otto.Otto
+	funcs map[int]BuiltInFunctions
 }
 
 func (v OttoVM) Run(formulaString string) (JSValue, error) {
@@ -134,23 +139,36 @@ func (v OttoVM) ToVMValue(goValue interface{}) interface{} {
 
 func (v OttoVM) GetBuiltInFunc(funcName string) func(context *FormulaContext) {
 
-	funcs := DefaultBuiltInFunctions{}
+	for _, f := range v.funcs {
 
-	return func(context *FormulaContext) {
+		if f.Has(funcName) {
 
-		ctxVM := context.VM.(OttoVM)
+			return func(context *FormulaContext) {
 
-		if ctxVM != v {
-			panic(errors.New("The given FormulaContext does not connect to the current OttoVM"))
+				// ctxVM := context.VM.(OttoVM)
+
+				// if &ctxVM != &v {
+				// 	panic(errors.New("The given FormulaContext does not connect to the current OttoVM"))
+				// }
+
+				v.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
+
+					for _, f := range v.funcs {
+						result, found := f.Execute(funcName, v, call)
+
+						if found {
+							return v.ToVMValue(result).(otto.Value)
+						}
+					}
+
+					panic(errors.New("Runtime error: Function not found - " + funcName))
+				})
+			}
 		}
-
-		v.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
-
-			result, _ := funcs.Execute(funcName, v, call)
-
-			return v.ToVMValue(result).(otto.Value)
-		})
 	}
+
+	//Falls through
+	return nil
 }
 
 //IsDefined check if the current JS value is defined

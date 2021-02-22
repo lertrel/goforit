@@ -6,7 +6,8 @@ type Formula struct {
 	// r      *regexp.Regexp
 	// customFuncs map[string]string
 	customFuncs map[int]CustomFunctionRepository
-	Debug       bool
+	// builtInFuncs map[int]BuiltInFunctions
+	Debug bool
 }
 
 func (f Formula) debug(format string, args ...interface{}) {
@@ -68,7 +69,7 @@ func (f Formula) LoadContext(context *FormulaContext, formulaStr string) (c *For
 		}
 
 		//Falls through
-		context = &FormulaContext{vm: vm, loadedFuncs: make(map[string]bool), Debug: f.Debug}
+		context = &FormulaContext{VM: vm, loadedFuncs: make(map[string]bool), Debug: f.Debug}
 	}
 
 	f.debug("Formula.LoadContext() - Extracting function names from %v", formulaStr)
@@ -94,7 +95,14 @@ func (f Formula) injectFuncToContext(context *FormulaContext, funcName string) e
 		return nil
 	}
 
-	if fn := getBuilinFunc(funcName); fn != nil {
+	// if fn := getBuilinFunc(funcName); fn != nil {
+	// 	context.markFuncAsLoaded(funcName, false)
+	// 	fn(context)
+	// 	context.markFuncAsLoaded(funcName, true)
+
+	// 	return nil
+	// }
+	if fn := context.VM.GetBuiltInFunc(funcName); fn != nil {
 		context.markFuncAsLoaded(funcName, false)
 		fn(context)
 		context.markFuncAsLoaded(funcName, true)

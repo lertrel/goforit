@@ -6,9 +6,7 @@ import (
 
 func Get() Formula {
 
-	builder := GetFormularBuilder()
-
-	return builder.Get()
+	return GetFormularBuilder().SetDebug(false).Get()
 }
 
 func TestSimpleFormula(t *testing.T) {

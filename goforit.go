@@ -23,69 +23,110 @@ func debug(b bool, format string, args ...interface{}) {
 func GetFormularBuilder() FormulaBuilder {
 
 	return FormulaBuilder{
-		debug:  false,
-		repos:  make(map[int]CustomFunctionRepository),
-		driver: nil,
+		Debug:  false,
+		repos:  make(map[CustomFunctionRepository]CustomFunctionRepository),
+		Driver: nil,
 	}
 }
 
 type FormulaBuilder struct {
-	debug  bool
+	Debug  bool
 	repos  map[CustomFunctionRepository]CustomFunctionRepository
-	driver VMDriver
+	funcs  map[BuiltInFunctions]BuiltInFunctions
+	Driver VMDriver
 }
 
-func (b *FormulaBuilder) SetDebug(debug bool) FormulaBuilder {
+func (b FormulaBuilder) SetDebug(debug bool) FormulaBuilder {
 
 	return FormulaBuilder{
-		debug:  debug,
+		Debug:  debug,
 		repos:  b.repos,
-		driver: b.driver,
+		funcs:  b.funcs,
+		Driver: b.Driver,
 	}
 }
 
-func (b FormulaBuilder) AetCustomFunctionRepository(repo CustomFunctionRepository) FormulaBuilder {
+func (b FormulaBuilder) AddCustomFunctionRepository(repo CustomFunctionRepository) FormulaBuilder {
 
-	_, found := b.repos[repo]
+	b2 := FormulaBuilder{
+		Debug:  b.Debug,
+		repos:  b.repos,
+		funcs:  b.funcs,
+		Driver: b.Driver,
+	}
+
+	_, found := b2.repos[repo]
 
 	if !found {
-		b.repos[repo] = repo
+		b2.repos[repo] = repo
 	}
 
-	return FormulaBuilder{
-		debug:  b.debug,
-		repos:  b.repos,
-		driver: b.driver,
-	}
+	return b2
 }
 
-func (b *FormulaBuilder) SetDriver(driver VMDriver) FormulaBuilder {
+func (b FormulaBuilder) AddBuiltInFunctions(funcs BuiltInFunctions) FormulaBuilder {
+
+	b2 := FormulaBuilder{
+		Debug:  b.Debug,
+		repos:  b.repos,
+		funcs:  b.funcs,
+		Driver: b.Driver,
+	}
+
+	_, found := b2.funcs[funcs]
+
+	if !found {
+		b2.funcs[funcs] = funcs
+	}
+
+	return b2
+}
+
+func (b FormulaBuilder) SetDriver(driver VMDriver) FormulaBuilder {
 
 	return FormulaBuilder{
-		debug:  b.debug,
+		Debug:  b.Debug,
 		repos:  b.repos,
-		driver: driver,
+		funcs:  b.funcs,
+		Driver: driver,
 	}
 }
 
 func (b FormulaBuilder) Get() Formula {
 
+	repos := make(map[int]CustomFunctionRepository)
+
+	i := 0
+	repos[i] = DefaultCustomFunctionRepository{customFuncs: make(map[string]string)}
+
+	for r := range b.repos {
+		i++
+		repos[i] = r
+	}
+
+	funcs := make(map[int]BuiltInFunctions)
+
+	i = 0
+	funcs[i] = DefaultBuiltInFunctions{}
+
+	for r := range b.funcs {
+		i++
+		funcs[i] = r
+	}
+
 	var driver VMDriver
-	var repo CustomFunctionRepository
 
-	if b.driver != nil {
-		driver = b.driver
+	if b.Driver != nil {
+		driver = b.Driver
 	} else {
-		driver = &OttoVMDriver{}
+		driver = &OttoVMDriver{funcs: funcs}
 	}
 
-	if b.repos != nil {
-		repo = b.repos
-	} else {
-		repo = DefaultCustomFunctionRepository{}
+	return Formula{
+		driver:      driver,
+		customFuncs: repos,
+		Debug:       b.Debug,
 	}
-
-	return Formula{driver: driver, customFuncs: repo, Debug: b.debug}
 }
 
 // func (b FormulaBuilder) Get() Formula {
