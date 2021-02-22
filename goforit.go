@@ -19,6 +19,11 @@ func debug(b bool, format string, args ...interface{}) {
 	}
 }
 
+//GetFormularBuilder To obtain formula builder
+//
+//Ex.
+//builder := GetFormularBuilder()
+//formula := builder.Get()
 func GetFormularBuilder() FormulaBuilder {
 
 	return FormulaBuilder{
@@ -28,6 +33,7 @@ func GetFormularBuilder() FormulaBuilder {
 	}
 }
 
+//FormulaBuilder a formula builder
 type FormulaBuilder struct {
 	Debug  bool
 	repos  map[CustomFunctionRepository]CustomFunctionRepository
@@ -35,6 +41,7 @@ type FormulaBuilder struct {
 	Driver VMDriver
 }
 
+//SetDebug setting debug flag (if yes log wll be printed)
 func (b FormulaBuilder) SetDebug(debug bool) FormulaBuilder {
 
 	return FormulaBuilder{
@@ -45,6 +52,13 @@ func (b FormulaBuilder) SetDebug(debug bool) FormulaBuilder {
 	}
 }
 
+//AddCustomFunctionRepository adding a custom function repository
+//before getting a new formula, so the custom functions will be also
+//being looked up in the given repository if it's not found in the
+//default repository.
+//
+//With this, it's allow client to have freedom to store and provide
+//customer functions from various sources e.g., DB, files, etc.
 func (b FormulaBuilder) AddCustomFunctionRepository(repo CustomFunctionRepository) FormulaBuilder {
 
 	b2 := FormulaBuilder{
@@ -63,6 +77,18 @@ func (b FormulaBuilder) AddCustomFunctionRepository(repo CustomFunctionRepositor
 	return b2
 }
 
+//AddBuiltInFunctions adding a BuiltInFunctions implementation
+//before getting a new formula, so the BuiltInFunction will be also
+//being looked up if a desirable function is not found in the default
+//repository.
+//
+//With this, it's allow client to provide additional built-in functions
+//customer functions from various sources e.g., DB, files, etc.
+//
+//*NOTE* that built-in functions are different from custom functions that
+//the built-in functions are implemented in Go and loaded as static packages
+//together with client program, so not need for VM to intrepret this fucntions
+//so basically it should run faster than the custom functions
 func (b FormulaBuilder) AddBuiltInFunctions(funcs BuiltInFunctions) FormulaBuilder {
 
 	b2 := FormulaBuilder{
@@ -81,6 +107,7 @@ func (b FormulaBuilder) AddBuiltInFunctions(funcs BuiltInFunctions) FormulaBuild
 	return b2
 }
 
+//SetDriver allow client to use another VM rather than the default one
 func (b FormulaBuilder) SetDriver(driver VMDriver) FormulaBuilder {
 
 	return FormulaBuilder{
@@ -91,6 +118,7 @@ func (b FormulaBuilder) SetDriver(driver VMDriver) FormulaBuilder {
 	}
 }
 
+//Get to obtain a new Formula
 func (b FormulaBuilder) Get() Formula {
 
 	repos := make(map[int]CustomFunctionRepository)

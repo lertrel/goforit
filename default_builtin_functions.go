@@ -7,9 +7,12 @@ import (
 	"strconv"
 )
 
+//DefaultBuiltInFunctions providing built-in functions shipped with goforit
 type DefaultBuiltInFunctions struct {
 }
 
+//Has to check if the given function name is supported
+//by the current BuiltInFunctions
 func (fs DefaultBuiltInFunctions) Has(funcName string) bool {
 
 	switch funcName {
@@ -41,6 +44,7 @@ func (fs DefaultBuiltInFunctions) Has(funcName string) bool {
 
 }
 
+//Execute to execute a built-in function as per the given function name
 func (fs DefaultBuiltInFunctions) Execute(funcName string, vm VM, funcDef interface{}) (interface{}, bool) {
 
 	switch funcName {
