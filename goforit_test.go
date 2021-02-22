@@ -4,9 +4,16 @@ import (
 	"testing"
 )
 
+func Get() Formula {
+
+	builder := GetFormularBuilder()
+
+	return builder.Get()
+}
+
 func TestSimpleFormula(t *testing.T) {
 
-str := `
+	str := `
 abc = 2 + 2;
 console.log("The value of abc is " + abc); // 4
 `
@@ -25,7 +32,7 @@ console.log("The value of abc is " + abc); // 4
 
 func TestBuiltInFormula(t *testing.T) {
 
-str := `
+	str := `
 i = $SUMI(1, 2, $SUMI(1, $MIN(2,3)), $SUMI(2, 2), 5);
 f = $SUMF(1.5, $SUMF($MAX(1.2, 1.1), $ABS(-1.39)), $IF(i == 15, 5.0, 6.0));
 console.log("i = " + i);
@@ -68,7 +75,7 @@ console.log("f = " + f);
 
 func TestSUMI(t *testing.T) {
 
-str := `
+	str := `
 $SUMI(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 `
 
@@ -91,7 +98,7 @@ $SUMI(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-	
+
 }
 
 func TestSUMF(t *testing.T) {
@@ -99,32 +106,32 @@ func TestSUMF(t *testing.T) {
 	str := `
 	$SUMF(1.0, 2.0, 3.0, 4.0, 5.1, 6.1, 7.1, 8.2, 9, 10)
 	`
-	
-		f := Get()
-		c, err := f.LoadContext(nil, str)
-		if err != nil {
-			t.Error(err)
-		}
-	
-		jsI, runtimeError := c.Run(str)
-		if runtimeError != nil {
-			t.Error(runtimeError)
-		}
-	
-		var expected float64 = 55.5
-		goI, err3 := jsI.ToFloat()
-		t.Logf("goI = %v\n", goI)
-		if err3 != nil {
-			t.Error(err3)
-		} else if goI != expected {
-			t.Errorf("Expect %v but got %v\n", expected, goI)
-		}
-		
+
+	f := Get()
+	c, err := f.LoadContext(nil, str)
+	if err != nil {
+		t.Error(err)
+	}
+
+	jsI, runtimeError := c.Run(str)
+	if runtimeError != nil {
+		t.Error(runtimeError)
+	}
+
+	var expected float64 = 55.5
+	goI, err3 := jsI.ToFloat()
+	t.Logf("goI = %v\n", goI)
+	if err3 != nil {
+		t.Error(err3)
+	} else if goI != expected {
+		t.Errorf("Expect %v but got %v\n", expected, goI)
+	}
+
 }
-	
+
 func TestMIN(t *testing.T) {
 
-str := `
+	str := `
 $MIN(6, 7, 8, 9, 10, 5.2, 5.5, 5.1)
 `
 
@@ -147,12 +154,12 @@ $MIN(6, 7, 8, 9, 10, 5.2, 5.5, 5.1)
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-	
+
 }
 
 func TestMAX(t *testing.T) {
 
-str := `
+	str := `
 $MAX(6, 7, 8, 9, 10, 5.2, 5.5, 5.1)
 `
 
@@ -175,7 +182,7 @@ $MAX(6, 7, 8, 9, 10, 5.2, 5.5, 5.1)
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-	
+
 }
 
 func TestAVG(t *testing.T) {
@@ -183,7 +190,7 @@ func TestAVG(t *testing.T) {
 	str := `
 	$AVG(6, 7, 8, 9, 10, 5.2, 5.5, 5.1)
 	`
-	
+
 	f := Get()
 	c, err := f.LoadContext(nil, str)
 	if err != nil {
@@ -203,15 +210,15 @@ func TestAVG(t *testing.T) {
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-		
+
 }
-	
+
 func TestABS(t *testing.T) {
 
 	str := `
 	$ABS(-65.2285)
 	`
-	
+
 	f := Get()
 	c, err := f.LoadContext(nil, str)
 	if err != nil {
@@ -231,15 +238,15 @@ func TestABS(t *testing.T) {
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-		
+
 }
-	
+
 func TestRND(t *testing.T) {
 
 	str := `
 	$RND(-65.2285, 3)
 	`
-	
+
 	f := Get()
 	c, err := f.LoadContext(nil, str)
 	if err != nil {
@@ -259,11 +266,11 @@ func TestRND(t *testing.T) {
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-		
+
 	str = `
 	$RND(-65.2285, 2)
 	`
-	
+
 	jsI, runtimeError = c.Run(str)
 	if runtimeError != nil {
 		t.Error(runtimeError)
@@ -277,11 +284,11 @@ func TestRND(t *testing.T) {
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-		
+
 	str = `
 	$RND(-65.2285, 0)
 	`
-	
+
 	jsI, runtimeError = c.Run(str)
 	if runtimeError != nil {
 		t.Error(runtimeError)
@@ -295,15 +302,15 @@ func TestRND(t *testing.T) {
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-		
+
 }
-	
+
 func TestCEIL(t *testing.T) {
 
 	str := `
 	$CEIL(-65.2244, 3)
 	`
-	
+
 	f := Get()
 	c, err := f.LoadContext(nil, str)
 	if err != nil {
@@ -323,11 +330,11 @@ func TestCEIL(t *testing.T) {
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-		
+
 	str = `
 	$CEIL(-65.2244, 2)
 	`
-	
+
 	jsI, runtimeError = c.Run(str)
 	if runtimeError != nil {
 		t.Error(runtimeError)
@@ -341,11 +348,11 @@ func TestCEIL(t *testing.T) {
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-		
+
 	str = `
 	$CEIL(-65.2285, 0)
 	`
-	
+
 	jsI, runtimeError = c.Run(str)
 	if runtimeError != nil {
 		t.Error(runtimeError)
@@ -359,15 +366,15 @@ func TestCEIL(t *testing.T) {
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-		
+
 }
-	
+
 func TestFLOOR(t *testing.T) {
 
 	str := `
 	$FLOOR(-65.2244, 3)
 	`
-	
+
 	f := Get()
 	c, err := f.LoadContext(nil, str)
 	if err != nil {
@@ -387,11 +394,11 @@ func TestFLOOR(t *testing.T) {
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-		
+
 	str = `
 	$FLOOR(-65.2244, 2)
 	`
-	
+
 	jsI, runtimeError = c.Run(str)
 	if runtimeError != nil {
 		t.Error(runtimeError)
@@ -405,11 +412,11 @@ func TestFLOOR(t *testing.T) {
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-		
+
 	str = `
 	$FLOOR(-65.2285, 0)
 	`
-	
+
 	jsI, runtimeError = c.Run(str)
 	if runtimeError != nil {
 		t.Error(runtimeError)
@@ -423,15 +430,15 @@ func TestFLOOR(t *testing.T) {
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-		
+
 }
-	
+
 func TestIF(t *testing.T) {
 
 	str := `
 	$IF(true, 1, 2)
 	`
-	
+
 	f := Get()
 	c, err := f.LoadContext(nil, str)
 	if err != nil {
@@ -451,10 +458,10 @@ func TestIF(t *testing.T) {
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-		
+
 	str = `
 	$IF(false, 1, 2)
-	`	
+	`
 	jsI, runtimeError = c.Run(str)
 	if runtimeError != nil {
 		t.Error(runtimeError)
@@ -468,12 +475,12 @@ func TestIF(t *testing.T) {
 	} else if goI != expected {
 		t.Errorf("Expect %v but got %v\n", expected, goI)
 	}
-		
-}
-	
-func TestExtractFunctionListFromFormulaString(t * testing.T) {
 
-src := `
+}
+
+func TestExtractFunctionListFromFormulaString(t *testing.T) {
+
+	src := `
     // Sample xyzzy example
     $function(){
         if (3.14159 > 0) {
@@ -539,8 +546,7 @@ func TestCustomFormulaSimple(t *testing.T) {
 		}
 		`)
 
-
-str := `
+	str := `
 $PREMIUM1("M", 5, [1.1, 1.2, 1.3, 1.4, 1.5, 1.615], 100000)
 `
 
@@ -562,7 +568,7 @@ $PREMIUM1("M", 5, [1.1, 1.2, 1.3, 1.4, 1.5, 1.615], 100000)
 		t.Errorf("Expect %v but got %v\n", expected, goRet)
 	}
 
-str = `
+	str = `
 $PREMIUM1("F", 5, [1.1, 1.2, 1.3, 1.4, 1.5, 1.615], 100000)
 `
 
@@ -609,7 +615,6 @@ func TestCustomFormulaComplex(t *testing.T) {
 		}
 		`)
 
-
 	f.RegisterCustomFunction(
 		"$PREMIUM2",
 		`
@@ -649,8 +654,7 @@ func TestCustomFormulaComplex(t *testing.T) {
 		}
 		`)
 
-
-str := `
+	str := `
 $PREMIUM2("M", 1, [1.1, 1.2, 1.3], 100000, [2.1, 2.2, 2.3], 50000, [3.1, 3.2, 3.3], 4555)
 `
 	c, err := f.LoadContext(nil, str)
@@ -671,8 +675,7 @@ $PREMIUM2("M", 1, [1.1, 1.2, 1.3], 100000, [2.1, 2.2, 2.3], 50000, [3.1, 3.2, 3.
 		t.Errorf("Expect %v but got %v\n", expected, goRet)
 	}
 
-
-str = `
+	str = `
 $PREMIUM2("F", 1, [1.1, 1.2, 1.3], 100000, [2.1, 2.2, 2.3], 50000, [3.1, 3.2, 3.3], 4555)
 `
 	c, err = f.LoadContext(c, str)
@@ -707,8 +710,7 @@ func TestCustomMultipleFormula(t *testing.T) {
 		}
 		`)
 
-
-str := `
+	str := `
 area1 = $RND(Math.sqrt($SUMF($RND(a*3,2), $RND(b*4,2), $RND(c*5,2))), 10);
 area2 = $CIRCLE(radius);
 console.log("a="+a);

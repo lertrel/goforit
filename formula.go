@@ -1,15 +1,11 @@
 package goforit
 
-import (
-	"regexp"
-
-	"github.com/robertkrimen/otto"
-)
-
 //Formula a formula engine for creating Formulacontext
 type Formula struct {
-	r           *regexp.Regexp
-	customFuncs map[string]string
+	driver VMDriver
+	// r      *regexp.Regexp
+	// customFuncs map[string]string
+	customFuncs map[int]CustomFunctionRepository
 	Debug       bool
 }
 
@@ -28,44 +24,27 @@ func (f Formula) debug(format string, args ...interface{}) {
 // 	`)
 func (f *Formula) RegisterCustomFunction(funcName string, body string) bool {
 
-	_, found := f.customFuncs[funcName]
-
-	f.customFuncs[funcName] = body
-
-	return found
+	return f.customFuncs[0].RegisterCustomFunction(funcName, body)
 }
 
 //GetCustomFuncBody to get custom function source code
 func (f Formula) GetCustomFuncBody(funcName string) string {
 
-	body, found := f.customFuncs[funcName]
+	for _, repo := range f.customFuncs {
 
-	if found {
-		return body
+		if body := repo.GetCustomFuncBody(funcName); body != "" {
+
+			return body
+		}
+
 	}
 
-	//Falls through
 	return ""
 }
 
 func (f Formula) extractFunctionListFromFormulaString(formulaStr string) []string {
 
-	matches := f.r.FindAllStringSubmatch(formulaStr, -1)
-	dedupMatches := make(map[string]bool)
-
-	for i := 0; i < len(matches); i++ {
-		dedupMatches[matches[i][1]] = true
-	}
-
-	funArr := make([]string, len(dedupMatches))
-
-	i := 0
-	for k := range dedupMatches {
-		funArr[i] = k
-		i++
-	}
-
-	return funArr
+	return f.driver.ExtractFunctionListFromFormulaString(formulaStr)
 }
 
 //LoadContext If context is nil then create a new FormulaContext
@@ -82,7 +61,14 @@ func (f Formula) LoadContext(context *FormulaContext, formulaStr string) (c *For
 
 	if context == nil {
 		// context = &	FormulaContext{vm: otto.New()}
-		context = &FormulaContext{vm: otto.New(), loadedFuncs: make(map[string]bool), Debug: f.Debug}
+		// context = &FormulaContext{vm: otto.New(), loadedFuncs: make(map[string]bool), Debug: f.Debug}
+		vm, vmErr := f.driver.Get()
+		if vmErr != nil {
+			return nil, vmErr
+		}
+
+		//Falls through
+		context = &FormulaContext{vm: vm, loadedFuncs: make(map[string]bool), Debug: f.Debug}
 	}
 
 	f.debug("Formula.LoadContext() - Extracting function names from %v", formulaStr)

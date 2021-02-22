@@ -1,11 +1,10 @@
 package goforit
 
-import "github.com/robertkrimen/otto"
-
 //FormulaContext a formula context created by parsing formula string
 //Any formula string have to be parsed into a context before using
 type FormulaContext struct {
-	vm          *otto.Otto
+	// VM          *otto.Otto
+	VM          VM
 	loadedFuncs map[string]bool
 	Debug       bool
 }
@@ -38,26 +37,36 @@ type FormulaContext struct {
 // t.Logf("goI = %v\n", goI)
 func (c FormulaContext) Run(formulaString string) (JSValue, error) {
 
-	value, err := c.vm.Run(formulaString)
-	if err != nil {
-		return JSValue{}, err
-	}
-
-	//Falls through
-	return JSValue{impl: value}, nil
+	return c.VM.Run(formulaString)
 }
+
+// func (c FormulaContext) Run(formulaString string) (JSValue, error) {
+
+// 	value, err := c.vm.Run(formulaString)
+// 	if err != nil {
+// 		return JSValue{}, err
+// 	}
+
+// 	//Falls through
+// 	return JSValue{impl: value}, nil
+// }
 
 //Get getting a variable inside FormulaContext
 func (c FormulaContext) Get(varname string) (JSValue, error) {
 
-	value, err := c.vm.Get(varname)
-	if err != nil {
-		return JSValue{}, err
-	}
-
-	//Falls through
-	return JSValue{impl: value}, nil
+	return c.VM.Get(varname)
 }
+
+// func (c FormulaContext) Get(varname string) (JSValue, error) {
+
+// 	value, err := c.vm.Get(varname)
+// 	if err != nil {
+// 		return JSValue{}, err
+// 	}
+
+// 	//Falls through
+// 	return JSValue{impl: value}, nil
+// }
 
 //Set getting a variable inside FormulaContext
 //
@@ -93,7 +102,7 @@ func (c FormulaContext) Get(varname string) (JSValue, error) {
 //
 func (c FormulaContext) Set(varname string, value interface{}) error {
 
-	err := c.vm.Set(varname, value)
+	err := c.VM.Set(varname, value)
 	if err != nil {
 		return err
 	}

@@ -84,7 +84,7 @@ func (j JSValue) ToString() (string, error) {
 	return j.impl.ToString()
 }
 
-//Export js value to Go value type as specified in a given interface
+//Export js value to Go value type
 func (j JSValue) Export() (interface{}, error) {
 	return j.impl.Export()
 }
