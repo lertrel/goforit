@@ -61,22 +61,25 @@ func (v OttoVM) Run(formulaString string) (JSValue, error) {
 
 	value, err := v.vm.Run(formulaString)
 	if err != nil {
-		return JSValue{}, err
+		return NewJSValue(nil, nil), err
 	}
 
 	//Falls through
-	return JSValue{impl: value}, nil
+	// return JSValue{impl: value}, nil
+	return NewJSValue(v, value), nil
 }
 
 func (v OttoVM) Get(varname string) (JSValue, error) {
 
 	value, err := v.vm.Get(varname)
 	if err != nil {
-		return JSValue{}, err
+		// return JSValue{}, err
+		return NewJSValue(nil, nil), err
 	}
 
 	//Falls through
-	return JSValue{impl: value}, nil
+	// return JSValue{impl: value}, nil
+	return NewJSValue(v, value), nil
 }
 
 func (v OttoVM) Set(varname string, value interface{}) error {

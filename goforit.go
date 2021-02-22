@@ -13,7 +13,6 @@ var debugFlag = false
 
 // 	return Formula{r: r, customFuncs: make(map[string]string), Debug: false}
 // }
-
 func debug(b bool, format string, args ...interface{}) {
 	if b {
 		log.Printf(format, args...)
@@ -119,7 +118,7 @@ func (b FormulaBuilder) Get() Formula {
 	if b.Driver != nil {
 		driver = b.Driver
 	} else {
-		driver = &OttoVMDriver{funcs: funcs}
+		driver = GetVMDriver(funcs)
 	}
 
 	return Formula{

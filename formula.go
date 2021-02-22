@@ -48,6 +48,11 @@ func (f Formula) extractFunctionListFromFormulaString(formulaStr string) []strin
 	return f.driver.ExtractFunctionListFromFormulaString(formulaStr)
 }
 
+func (f Formula) newFormulaContext(vm VM) *FormulaContext {
+
+	return &FormulaContext{VM: vm, loadedFuncs: make(map[string]bool), Debug: f.Debug}
+}
+
 //LoadContext If context is nil then create a new FormulaContext
 //Then preparing a newly created context or a given context
 //By loading referred functions (both built-in & custom) into context
@@ -69,7 +74,7 @@ func (f Formula) LoadContext(context *FormulaContext, formulaStr string) (c *For
 		}
 
 		//Falls through
-		context = &FormulaContext{VM: vm, loadedFuncs: make(map[string]bool), Debug: f.Debug}
+		context = f.newFormulaContext(vm)
 	}
 
 	f.debug("Formula.LoadContext() - Extracting function names from %v", formulaStr)
