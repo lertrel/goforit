@@ -1,11 +1,10 @@
 package goforit
 
-import "github.com/robertkrimen/otto"
-
 //FormulaContext a formula context created by parsing formula string
 //Any formula string have to be parsed into a context before using
 type FormulaContext struct {
-	vm          *otto.Otto
+	// VM          *otto.Otto
+	VM          VM
 	loadedFuncs map[string]bool
 	Debug       bool
 }
@@ -20,80 +19,116 @@ type FormulaContext struct {
 //can be executed in the same context
 //
 // Ex.
-// str := `
-// $IF(true, 1, 2)
-// `
-// f := Get()
-// c, err := f.LoadContext(nil, str)
-// if err != nil {
-// 	t.Error(err)
-// }
 //
-// jsI, runtimeError := c.Run(str)
-// if runtimeError != nil {
-// 	t.Error(runtimeError)
-// }
+// 		str := `
+// 		$IF(true, 1, 2)
+// 		`
+// 		f := goforit.GetFormularBuilder().Get()
+// 		c, err := f.LoadContext(nil, str)
+// 		if err != nil {
+// 			t.Error(err)
+// 		}
 //
-// goI, _ := jsI.ToInteger()
-// t.Logf("goI = %v\n", goI)
+// 		jsI, runtimeError := c.Run(str)
+// 		if runtimeError != nil {
+// 			t.Error(runtimeError)
+// 		}
+//
+// 		goI, _ := jsI.ToInteger()
+// 		t.Logf("goI = %v\n", goI)
+//
 func (c FormulaContext) Run(formulaString string) (JSValue, error) {
 
-	value, err := c.vm.Run(formulaString)
-	if err != nil {
-		return JSValue{}, err
-	}
-
-	//Falls through
-	return JSValue{impl: value}, nil
+	return c.VM.Run(formulaString)
 }
+
+// func (c FormulaContext) Run(formulaString string) (JSValue, error) {
+
+// 	value, err := c.vm.Run(formulaString)
+// 	if err != nil {
+// 		return JSValue{}, err
+// 	}
+
+// 	//Falls through
+// 	return JSValue{impl: value}, nil
+// }
 
 //Get getting a variable inside FormulaContext
+//
+// 		str := `
+// 		i = $SUMI(1, 2, $SUMI(1, $MIN(2,3)), $SUMI(2, 2), 5);
+// 		f = $SUMF(1.5, $SUMF($MAX(1.2, 1.1), $ABS(-1.39)), $IF(i == 15, 5.0, 6.0));
+// 		`
+//
+// 		f := goforit.GetFormularBuilder().Get()
+// 		c, err := f.LoadContext(nil, str)
+// 		if err != nil {
+// 			t.Error(err)
+// 		}
+//
+// 		_, runtimeError := c.Run(str)
+// 		if runtimeError != nil {
+// 			t.Error(runtimeError)
+// 		}
+//
+// 		jsI, _ := c.Get("i")
+// 		goI, _ := jsI.ToInteger()
+// 		jsF, _ := c.Get("f")
+// 		goF, _ := jsF.ToFloat()
+//
 func (c FormulaContext) Get(varname string) (JSValue, error) {
 
-	value, err := c.vm.Get(varname)
-	if err != nil {
-		return JSValue{}, err
-	}
-
-	//Falls through
-	return JSValue{impl: value}, nil
+	return c.VM.Get(varname)
 }
 
-//Set getting a variable inside FormulaContext
+// func (c FormulaContext) Get(varname string) (JSValue, error) {
+
+// 	value, err := c.vm.Get(varname)
+// 	if err != nil {
+// 		return JSValue{}, err
+// 	}
+
+// 	//Falls through
+// 	return JSValue{impl: value}, nil
+// }
+
+//Set setting a variable inside FormulaContext
 //
 //Ex.
-// str := `
-// area1 = $RND(Math.sqrt($SUMF($RND(a*3,2), $RND(b*4,2), $RND(c*5,2))), 10);
-// area2 = $CIRCLE(radius);
-// console.log("a="+a);
-// console.log("b="+b);
-// console.log("c="+c);
-// console.log("radius="+radius);
-// `
-// 	c, err := f.LoadContext(nil, str)
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
 //
-// 	c.Set("a", 2)
-// 	c.Set("b", 3)
-// 	c.Set("c", 4)
-// 	c.Set("radius", 5)
+//		f := goforit.GetFormularBuilder().Get()
+// 		str := `
+// 		area1 = $RND(Math.sqrt($SUMF($RND(a*3,2), $RND(b*4,2), $RND(c*5,2))), 10);
+// 		area2 = $CIRCLE(radius);
+// 		console.log("a="+a);
+// 		console.log("b="+b);
+// 		console.log("c="+c);
+// 		console.log("radius="+radius);
+// 		`
+// 		c, err := f.LoadContext(nil, str)
+// 		if err != nil {
+// 			t.Error(err)
+// 		}
 //
-// 	_, runtimeError := c.Run(str)
-// 	if runtimeError != nil {
-// 		t.Error(runtimeError)
-// 	}
+// 		c.Set("a", 2)
+// 		c.Set("b", 3)
+// 		c.Set("c", 4)
+// 		c.Set("radius", 5)
 //
-// 	jsArea1, _ := c.Get("area1")
-// 	jsArea2, _ := c.Get("area2")
+// 		_, runtimeError := c.Run(str)
+// 		if runtimeError != nil {
+// 			t.Error(runtimeError)
+// 		}
 //
-// 	area1, _ := jsArea1.ToFloat()
-// 	area2, _ := jsArea2.ToFloat()
+// 		jsArea1, _ := c.Get("area1")
+// 		jsArea2, _ := c.Get("area2")
+//
+// 		area1, _ := jsArea1.ToFloat()
+// 		area2, _ := jsArea2.ToFloat()
 //
 func (c FormulaContext) Set(varname string, value interface{}) error {
 
-	err := c.vm.Set(varname, value)
+	err := c.VM.Set(varname, value)
 	if err != nil {
 		return err
 	}
