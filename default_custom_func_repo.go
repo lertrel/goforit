@@ -7,13 +7,15 @@ type DefaultCustomFunctionRepository struct {
 
 //RegisterCustomFunction for registering custom function
 //Ex.
-// r.RegisterCustomFunction(
-// 	"$CIRCLE",
-// 	`
-// 	function $CIRCLE(radius) {
-// 		return $RND(Math.PI * Math.pow(radius, 2), 10);
-// 	}
-// 	`)
+//
+// 		r.RegisterCustomFunction(
+// 			"$CIRCLE",
+// 			`
+// 			function $CIRCLE(radius) {
+// 				return $RND(Math.PI * Math.pow(radius, 2), 10);
+// 			}
+// 			`)
+//
 func (r DefaultCustomFunctionRepository) RegisterCustomFunction(funcName string, body string) bool {
 
 	_, found := r.customFuncs[funcName]

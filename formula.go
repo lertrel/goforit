@@ -5,9 +5,9 @@ type Formula struct {
 	driver VMDriver
 	// r      *regexp.Regexp
 	// customFuncs map[string]string
-	customFuncs map[int]CustomFunctionRepository
-	// builtInFuncs map[int]BuiltInFunctions
-	Debug bool
+	customFuncs  map[int]CustomFunctionRepository
+	builtInFuncs map[int]BuiltInFunctions
+	Debug        bool
 }
 
 func (f Formula) debug(format string, args ...interface{}) {
@@ -16,13 +16,16 @@ func (f Formula) debug(format string, args ...interface{}) {
 
 //RegisterCustomFunction for registering custom function
 //Ex.
-// f.RegisterCustomFunction(
-// 	"$CIRCLE",
-// 	`
-// 	function $CIRCLE(radius) {
-// 		return $RND(Math.PI * Math.pow(radius, 2), 10);
-// 	}
-// 	`)
+//
+// 		f := goforit.GetFormularBuilder().Get()
+// 		f.RegisterCustomFunction(
+// 			"$CIRCLE",
+// 			`
+// 			function $CIRCLE(radius) {
+// 				return $RND(Math.PI * Math.pow(radius, 2), 10);
+// 			}
+// 		`)
+//
 func (f *Formula) RegisterCustomFunction(funcName string, body string) bool {
 
 	return f.customFuncs[0].RegisterCustomFunction(funcName, body)
@@ -48,9 +51,15 @@ func (f Formula) extractFunctionListFromFormulaString(formulaStr string) []strin
 	return f.driver.ExtractFunctionListFromFormulaString(formulaStr)
 }
 
-func (f Formula) newFormulaContext(vm VM) *FormulaContext {
+// func (f Formula) newFormulaContext(vm VM) *FormulaContext {
+func (f Formula) newFormulaContext() (*FormulaContext, error) {
 
-	return &FormulaContext{VM: vm, loadedFuncs: make(map[string]bool), Debug: f.Debug}
+	vm, vmErr := f.driver.Get()
+	if vmErr != nil {
+		return nil, vmErr
+	}
+
+	return &FormulaContext{VM: vm, loadedFuncs: make(map[string]bool), Debug: f.Debug}, nil
 }
 
 //LoadContext If context is nil then create a new FormulaContext
@@ -68,13 +77,18 @@ func (f Formula) LoadContext(context *FormulaContext, formulaStr string) (c *For
 	if context == nil {
 		// context = &	FormulaContext{vm: otto.New()}
 		// context = &FormulaContext{vm: otto.New(), loadedFuncs: make(map[string]bool), Debug: f.Debug}
-		vm, vmErr := f.driver.Get()
-		if vmErr != nil {
-			return nil, vmErr
-		}
+		// vm, vmErr := f.driver.Get()
+		// if vmErr != nil {
+		// 	return nil, vmErr
+		// }
 
 		//Falls through
-		context = f.newFormulaContext(vm)
+		// context = f.newFormulaContext(vm)
+		var contextErr error
+		context, contextErr = f.newFormulaContext()
+		if contextErr != nil {
+			return nil, contextErr
+		}
 	}
 
 	f.debug("Formula.LoadContext() - Extracting function names from %v", formulaStr)
@@ -107,7 +121,8 @@ func (f Formula) injectFuncToContext(context *FormulaContext, funcName string) e
 
 	// 	return nil
 	// }
-	if fn := context.VM.GetBuiltInFunc(funcName); fn != nil {
+	// if fn := context.VM.GetBuiltInFunc(funcName); fn != nil {
+	if fn := context.VM.GetBuiltInFunc(funcName, f.builtInFuncs); fn != nil {
 		context.markFuncAsLoaded(funcName, false)
 		fn(context)
 		context.markFuncAsLoaded(funcName, true)

@@ -22,8 +22,10 @@ func debug(b bool, format string, args ...interface{}) {
 //GetFormularBuilder To obtain formula builder
 //
 //Ex.
-//builder := GetFormularBuilder()
-//formula := builder.Get()
+//
+//		builder := GetFormularBuilder()
+//		formula := builder.Get()
+//
 func GetFormularBuilder() FormulaBuilder {
 
 	return FormulaBuilder{
@@ -146,13 +148,15 @@ func (b FormulaBuilder) Get() Formula {
 	if b.Driver != nil {
 		driver = b.Driver
 	} else {
-		driver = GetVMDriver(funcs)
+		// driver = GetVMDriver(funcs)
+		driver = GetVMDriver()
 	}
 
 	return Formula{
-		driver:      driver,
-		customFuncs: repos,
-		Debug:       b.Debug,
+		driver:       driver,
+		customFuncs:  repos,
+		builtInFuncs: funcs,
+		Debug:        b.Debug,
 	}
 }
 

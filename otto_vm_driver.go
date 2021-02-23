@@ -10,28 +10,38 @@ import (
 
 var r, _ = regexp.Compile("(\\$[^\\$()\\s]+)\\(")
 
+//OttoVMDriver otto implementation of VMDriver
 type OttoVMDriver struct {
 	templateVM VM
-	funcs      map[int]BuiltInFunctions
+	// funcs      map[int]BuiltInFunctions
 }
 
+//Get getting VM implementation of this driver
 func (d OttoVMDriver) Get() (VM, error) {
 
 	if d.templateVM != nil {
 
 		nativeVM := d.templateVM.(OttoVM)
 
-		return OttoVM{vm: nativeVM.vm.Copy(), funcs: nativeVM.funcs}, nil
+		// return OttoVM{vm: nativeVM.vm.Copy(), funcs: nativeVM.funcs}, nil
+		return OttoVM{vm: nativeVM.vm.Copy()}, nil
 	}
 
 	//Falls through
-	return OttoVM{vm: otto.New(), funcs: d.funcs}, nil
+	// return OttoVM{vm: otto.New(), funcs: d.funcs}, nil
+	return OttoVM{vm: otto.New()}, nil
 }
 
+//SetTemplate set template VM, this VM will be used for cloning
+//another VM to reduce constructing overhead
 func (d *OttoVMDriver) SetTemplate(template VM) {
 	d.templateVM = template
 }
 
+//ExtractFunctionListFromFormulaString extracting functions names
+//from the given script/formular so that the function can be loaded
+//by Formula.LoadContext() before being executed, otherwise the
+//unloaded functions will not be known to the scripting/VM engine
 func (d OttoVMDriver) ExtractFunctionListFromFormulaString(formulaStr string) []string {
 
 	matches := r.FindAllStringSubmatch(formulaStr, -1)
@@ -52,11 +62,13 @@ func (d OttoVMDriver) ExtractFunctionListFromFormulaString(formulaStr string) []
 	return funArr
 }
 
+//OttoVM otto implementation of VM (abstract layer)
 type OttoVM struct {
-	vm    *otto.Otto
-	funcs map[int]BuiltInFunctions
+	vm *otto.Otto
+	// funcs map[int]BuiltInFunctions
 }
 
+//Run for running a given script/formual
 func (v OttoVM) Run(formulaString string) (JSValue, error) {
 
 	value, err := v.vm.Run(formulaString)
@@ -69,6 +81,7 @@ func (v OttoVM) Run(formulaString string) (JSValue, error) {
 	return NewJSValue(v, value), nil
 }
 
+//Get getting value of a variable out of scripting context
 func (v OttoVM) Get(varname string) (JSValue, error) {
 
 	value, err := v.vm.Get(varname)
@@ -82,6 +95,7 @@ func (v OttoVM) Get(varname string) (JSValue, error) {
 	return NewJSValue(v, value), nil
 }
 
+//Set setting value of a valiable inside scripting context
 func (v OttoVM) Set(varname string, value interface{}) error {
 
 	err := v.vm.Set(varname, value)
@@ -93,11 +107,14 @@ func (v OttoVM) Set(varname string, value interface{}) error {
 	return nil
 }
 
+//ValidateFuncArguments validting if a given scripting function has
+//number of arguments equal to the given cnt
 func (v OttoVM) ValidateFuncArguments(funcName string, cnt int, funcDef interface{}) {
 
 	validateJSFuncArguments(funcName, cnt, funcDef.(otto.FunctionCall))
 }
 
+//GetFuncArgsCount getting function arguments count
 func (v OttoVM) GetFuncArgsCount(funcDef interface{}) int {
 
 	call := funcDef.(otto.FunctionCall)
@@ -105,31 +122,38 @@ func (v OttoVM) GetFuncArgsCount(funcDef interface{}) int {
 	return len(call.ArgumentList)
 }
 
+//GetFuncArgAsFloat getting function argument refering by the index as float64
 func (v OttoVM) GetFuncArgAsFloat(funcDef interface{}, index int) float64 {
 
 	return getJSFloat(funcDef.(otto.FunctionCall), index)
 }
 
+//GetFuncArgAsInt getting function argument refering by the index as int64
 func (v OttoVM) GetFuncArgAsInt(funcDef interface{}, index int) int64 {
 
 	return getJSInt(funcDef.(otto.FunctionCall), index)
 }
 
+//GetFuncArgAsString getting function argument refering by the index as string
 func (v OttoVM) GetFuncArgAsString(funcDef interface{}, index int) string {
 
 	return getJSString(funcDef.(otto.FunctionCall), index)
 }
 
+//GetFuncArgAsBoolean getting function argument refering by the index as boolean
 func (v OttoVM) GetFuncArgAsBoolean(funcDef interface{}, index int) bool {
 
 	return getJSBoolean(funcDef.(otto.FunctionCall), index)
 }
 
+//GetFuncArgAsIs getting function argument refering by the index as raw type
+//depending on each scripting/VM engine e.g., otto.Value for otto
 func (v OttoVM) GetFuncArgAsIs(funcDef interface{}, index int) interface{} {
 
 	return funcDef.(otto.FunctionCall).ArgumentList[index]
 }
 
+//ToVMValue converting go variable into scriing/VM value e.g., otto.Value for otto
 func (v OttoVM) ToVMValue(goValue interface{}) interface{} {
 
 	jsResult, err := v.vm.ToValue(goValue)
@@ -140,9 +164,11 @@ func (v OttoVM) ToVMValue(goValue interface{}) interface{} {
 	return jsResult
 }
 
-func (v OttoVM) GetBuiltInFunc(funcName string) func(context *FormulaContext) {
+//GetBuiltInFunc getting a function for registering / connecting
+func (v OttoVM) GetBuiltInFunc(funcName string, funcs map[int]BuiltInFunctions) func(context *FormulaContext) {
 
-	for _, f := range v.funcs {
+	// for _, f := range v.funcs {
+	for _, f := range funcs {
 
 		if f.Has(funcName) {
 
@@ -156,7 +182,8 @@ func (v OttoVM) GetBuiltInFunc(funcName string) func(context *FormulaContext) {
 
 				v.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
 
-					for _, f := range v.funcs {
+					// for _, f := range v.funcs {
+					for _, f := range funcs {
 						result, found := f.Execute(funcName, v, call)
 
 						if found {
