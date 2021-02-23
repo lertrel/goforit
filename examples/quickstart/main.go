@@ -8,7 +8,7 @@ import (
 
 func main() {
 
-	f := goforit.GetFormularBuilder().Get()
+	f := goforit.GetFormulaBuilder().Get()
 
 	str := `
 $SUMI(x, 2*x, 3*x, 4*x) + x

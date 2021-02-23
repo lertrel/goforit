@@ -19,14 +19,14 @@ func debug(b bool, format string, args ...interface{}) {
 	}
 }
 
-//GetFormularBuilder To obtain formula builder
+//GetFormulaBuilder To obtain formula builder
 //
 //Ex.
 //
-//		builder := GetFormularBuilder()
+//		builder := GetFormulaBuilder()
 //		formula := builder.Get()
 //
-func GetFormularBuilder() FormulaBuilder {
+func GetFormulaBuilder() FormulaBuilder {
 
 	return FormulaBuilder{
 		Debug:  false,
