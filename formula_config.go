@@ -8,4 +8,6 @@ type FormulaConfig struct {
 	Body        string
 	Attributes  map[string]string
 	Enabled     bool
+	Inputs      []string
+	Outputs     []string
 }
