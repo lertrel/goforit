@@ -19,8 +19,8 @@ import (
 
 func main() {
 
-  //Creating Formula instance
-	f := goforit.Get()
+	//Creating Formula instance
+	f := goforit.GetFormularBuilder().Get()
 
 //$SUMI is a built-in function
 str := `

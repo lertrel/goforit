@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/lertrel/goforit"
 )
 
 func main() {
 
-	f := goforit.Get()
+	f := goforit.GetFormularBuilder().Get()
 
-str := `
+	str := `
 $SUMI(x, 2*x, 3*x, 4*x) + x
 `
 	c, err := f.LoadContext(nil, str)
