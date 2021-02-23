@@ -165,7 +165,7 @@ func (v OttoVM) ToVMValue(goValue interface{}) interface{} {
 }
 
 //GetBuiltInFunc getting a function for registering / connecting
-func (v OttoVM) GetBuiltInFunc(funcName string, funcs map[int]BuiltInFunctions) func(context *FormulaContext) {
+func (v OttoVM) GetBuiltInFunc(funcName string, funcs []BuiltInFunctions) func(context *FormulaContext) {
 
 	// for _, f := range v.funcs {
 	for _, f := range funcs {
