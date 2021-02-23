@@ -5,8 +5,10 @@ type Formula struct {
 	driver VMDriver
 	// r      *regexp.Regexp
 	// customFuncs map[string]string
-	customFuncs  map[int]CustomFunctionRepository
-	builtInFuncs map[int]BuiltInFunctions
+	// customFuncs  map[int]CustomFunctionRepository
+	customFuncs []CustomFunctionRepository
+	// builtInFuncs map[int]BuiltInFunctions
+	builtInFuncs []BuiltInFunctions
 	Debug        bool
 }
 
