@@ -1,322 +1,168 @@
 package goforit
 
 import (
-	"errors"
-	"fmt"
 	"log"
-	"math"
-	"math/big"
-	"regexp"
-	"strconv"
-
-	"github.com/robertkrimen/otto"
 )
 
 var debugFlag = false
 
 //Get An entry point to obtain Formula
-func Get() Formula {
+// func Get() Formula {
 
-	r, _ := regexp.Compile("(\\$[^\\$()\\s]+)\\(")
+// 	r, _ := regexp.Compile("(\\$[^\\$()\\s]+)\\(")
 
-	return Formula{r: r, customFuncs: make(map[string]string), Debug: false}
-}
-
+// 	return Formula{r: r, customFuncs: make(map[string]string), Debug: false}
+// }
 func debug(b bool, format string, args ...interface{}) {
 	if b {
 		log.Printf(format, args...)
 	}
 }
 
-func validateJSFuncArguments(funcName string, cnt int, call otto.FunctionCall) {
-
-	if len(call.ArgumentList) != cnt {
-		errMsg := fmt.Sprintf("%s - wrong number of arguments (expecting %d)", funcName, cnt)
-		panic(errors.New(errMsg))
-	}
-
-}
-
-func getJSFloat(call otto.FunctionCall, index int) float64 {
-
-	v, err := call.ArgumentList[index].ToFloat()
-	if err != nil {
-		panic(err)
-	}
-
-	return v
-}
-
-func getJSInt(call otto.FunctionCall, index int) int64 {
-
-	v, err := call.ArgumentList[index].ToInteger()
-	if err != nil {
-		panic(err)
-	}
-
-	return v
-}
-
-func getJSString(call otto.FunctionCall, index int) string {
-
-	v, err := call.ArgumentList[index].ToString()
-	if err != nil {
-		panic(err)
-	}
-
-	return v
-}
-
-func getJSBoolean(call otto.FunctionCall, index int) bool {
-
-	v, err := call.ArgumentList[index].ToBoolean()
-	if err != nil {
-		panic(err)
-	}
-
-	return v
-}
-
-func toJSValue(context *FormulaContext, value interface{}) otto.Value {
-
-	jsResult, err := context.vm.ToValue(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return jsResult
-}
-
-func getBuilinFunc(funcName string) func(context *FormulaContext) {
-
-	switch funcName {
-
-	case "$ABS":
-		return func(context *FormulaContext) {
-
-			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
-
-				validateJSFuncArguments("$ABS", 1, call)
-
-				v := getJSFloat(call, 0)
-				result := math.Abs(v)
-
-				return toJSValue(context, result)
-			})
-		}
-	case "$RND":
-		return func(context *FormulaContext) {
-
-			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
-
-				validateJSFuncArguments("$RND", 2, call)
-
-				v := getJSFloat(call, 0)
-				p := getJSInt(call, 1)
-				if 0 > p || p > 10 {
-					panic(errors.New("$RND - second parameter should be between 0 and 10"))
-				}
-
-				result := v
-				f := math.Pow10(int(p))
-				result = math.Round(v*f) / f
-
-				return toJSValue(context, result)
-			})
-		}
-	case "$FLOOR", "$FLR":
-		return func(context *FormulaContext) {
-
-			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
-
-				validateJSFuncArguments("$FLOOR", 2, call)
-
-				v := getJSFloat(call, 0)
-				p := getJSInt(call, 1)
-				if 0 > p || p > 10 {
-					panic(errors.New("$RND - second parameter should be between 0 and 10"))
-				}
-
-				result := v
-				f := math.Pow10(int(p))
-				result = math.Floor(v*f) / f
-
-				return toJSValue(context, result)
-			})
-		}
-	case "$CEIL":
-		return func(context *FormulaContext) {
-
-			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
-
-				validateJSFuncArguments("$CEIL", 2, call)
-
-				v := getJSFloat(call, 0)
-				p := getJSInt(call, 1)
-				if 0 > p || p > 10 {
-					panic(errors.New("$RND - second parameter should be between 0 and 10"))
-				}
-
-				result := v
-				f := math.Pow10(int(p))
-				result = math.Ceil(v*f) / f
-
-				return toJSValue(context, result)
-			})
-		}
-	case "$IF":
-		return func(context *FormulaContext) {
-
-			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
-
-				validateJSFuncArguments("$IF", 3, call)
-
-				b := getJSBoolean(call, 0)
-				var jsResult otto.Value
-
-				if b {
-					jsResult = call.ArgumentList[1]
-				} else {
-					jsResult = call.ArgumentList[2]
-				}
-
-				return jsResult
-			})
-		}
-	case "$SUMI":
-		return func(context *FormulaContext) {
-
-			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
-
-				var result int64
-				result = 0
-
-				for i := 0; i < len(call.ArgumentList); i++ {
-
-					v := getJSInt(call, i)
-					result = result + v
-
-				}
-
-				return toJSValue(context, result)
-			})
-		}
-	case "$SUMF":
-		return func(context *FormulaContext) {
-
-			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
-
-				var result float64
-				result = 0.0
-
-				for i := 0; i < len(call.ArgumentList); i++ {
-
-					v := getJSFloat(call, i)
-					result = result + v
-
-				}
-
-				return toJSValue(context, result)
-			})
-		}
-	case "$AVG":
-		return func(context *FormulaContext) {
-
-			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
-
-				result := big.NewFloat(0.0)
-				var i int
-
-				for i = 0; i < len(call.ArgumentList); i++ {
-
-					v := getJSFloat(call, i)
-					bigV := big.NewFloat(v)
-					result.Add(result, bigV)
-				}
-
-				result.Quo(result, big.NewFloat(float64(i)))
-				f, err := strconv.ParseFloat(result.String(), 10)
-				if err != nil {
-					panic(err)
-				}
-
-				return toJSValue(context, f)
-			})
-		}
-	case "$MIN":
-		return func(context *FormulaContext) {
-
-			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
-
-				hasLast := false
-				var last otto.Value = otto.Value{}
-
-				for i := 0; i < len(call.ArgumentList); i++ {
-
-					v := call.ArgumentList[i]
-
-					if !hasLast {
-						last = v
-						hasLast = true
-					} else {
-						l, el := last.ToFloat()
-						r, er := v.ToFloat()
-
-						if el != nil {
-							panic(el)
-						}
-						if er != nil {
-							panic(er)
-						}
-
-						if l > r {
-							last = v
-						}
-					}
-
-				}
-
-				return last
-			})
-		}
-	case "$MAX":
-		return func(context *FormulaContext) {
-
-			context.vm.Set(funcName, func(call otto.FunctionCall) otto.Value {
-
-				hasLast := false
-				var last otto.Value = otto.Value{}
-
-				for i := 0; i < len(call.ArgumentList); i++ {
-
-					v := call.ArgumentList[i]
-
-					if !hasLast {
-						last = v
-						hasLast = true
-					} else {
-						l, el := last.ToFloat()
-						r, er := v.ToFloat()
-
-						if el != nil {
-							panic(el)
-						}
-						if er != nil {
-							panic(er)
-						}
-
-						if l < r {
-							last = v
-						}
-					}
-
-				}
-
-				return last
-			})
-		}
-	default:
-		return nil
-
+//GetFormularBuilder To obtain formula builder
+//
+//Ex.
+//
+//		builder := GetFormularBuilder()
+//		formula := builder.Get()
+//
+func GetFormularBuilder() FormulaBuilder {
+
+	return FormulaBuilder{
+		Debug:  false,
+		repos:  make(map[CustomFunctionRepository]CustomFunctionRepository),
+		Driver: nil,
 	}
 }
+
+//FormulaBuilder a formula builder
+type FormulaBuilder struct {
+	Debug  bool
+	repos  map[CustomFunctionRepository]CustomFunctionRepository
+	funcs  map[BuiltInFunctions]BuiltInFunctions
+	Driver VMDriver
+}
+
+//SetDebug setting debug flag (if yes log wll be printed)
+func (b FormulaBuilder) SetDebug(debug bool) FormulaBuilder {
+
+	return FormulaBuilder{
+		Debug:  debug,
+		repos:  b.repos,
+		funcs:  b.funcs,
+		Driver: b.Driver,
+	}
+}
+
+//AddCustomFunctionRepository adding a custom function repository
+//before getting a new formula, so the custom functions will be also
+//being looked up in the given repository if it's not found in the
+//default repository.
+//
+//With this, it's allow client to have freedom to store and provide
+//customer functions from various sources e.g., DB, files, etc.
+func (b FormulaBuilder) AddCustomFunctionRepository(repo CustomFunctionRepository) FormulaBuilder {
+
+	b2 := FormulaBuilder{
+		Debug:  b.Debug,
+		repos:  b.repos,
+		funcs:  b.funcs,
+		Driver: b.Driver,
+	}
+
+	_, found := b2.repos[repo]
+
+	if !found {
+		b2.repos[repo] = repo
+	}
+
+	return b2
+}
+
+//AddBuiltInFunctions adding a BuiltInFunctions implementation
+//before getting a new formula, so the BuiltInFunction will be also
+//being looked up if a desirable function is not found in the default
+//repository.
+//
+//With this, it's allow client to provide additional built-in functions
+//customer functions from various sources e.g., DB, files, etc.
+//
+//*NOTE* that built-in functions are different from custom functions that
+//the built-in functions are implemented in Go and loaded as static packages
+//together with client program, so not need for VM to intrepret this fucntions
+//so basically it should run faster than the custom functions
+func (b FormulaBuilder) AddBuiltInFunctions(funcs BuiltInFunctions) FormulaBuilder {
+
+	b2 := FormulaBuilder{
+		Debug:  b.Debug,
+		repos:  b.repos,
+		funcs:  b.funcs,
+		Driver: b.Driver,
+	}
+
+	_, found := b2.funcs[funcs]
+
+	if !found {
+		b2.funcs[funcs] = funcs
+	}
+
+	return b2
+}
+
+//SetDriver allow client to use another VM rather than the default one
+func (b FormulaBuilder) SetDriver(driver VMDriver) FormulaBuilder {
+
+	return FormulaBuilder{
+		Debug:  b.Debug,
+		repos:  b.repos,
+		funcs:  b.funcs,
+		Driver: driver,
+	}
+}
+
+//Get to obtain a new Formula
+func (b FormulaBuilder) Get() Formula {
+
+	repos := make(map[int]CustomFunctionRepository)
+
+	i := 0
+	repos[i] = DefaultCustomFunctionRepository{customFuncs: make(map[string]string)}
+
+	for r := range b.repos {
+		i++
+		repos[i] = r
+	}
+
+	funcs := make(map[int]BuiltInFunctions)
+
+	i = 0
+	funcs[i] = DefaultBuiltInFunctions{}
+
+	for r := range b.funcs {
+		i++
+		funcs[i] = r
+	}
+
+	var driver VMDriver
+
+	if b.Driver != nil {
+		driver = b.Driver
+	} else {
+		// driver = GetVMDriver(funcs)
+		driver = GetVMDriver()
+	}
+
+	return Formula{
+		driver:       driver,
+		customFuncs:  repos,
+		builtInFuncs: funcs,
+		Debug:        b.Debug,
+	}
+}
+
+// func (b FormulaBuilder) Get() Formula {
+
+// 	r, _ := regexp.Compile("(\\$[^\\$()\\s]+)\\(")
+
+// 	return Formula{r: r, customFuncs: b.repo, Debug: b.debug}
+// }
