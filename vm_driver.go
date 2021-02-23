@@ -96,7 +96,7 @@ type VM interface {
 	//
 	// 		return nil
 	//
-	GetBuiltInFunc(funcName string, funcs map[int]BuiltInFunctions) func(context *FormulaContext)
+	GetBuiltInFunc(funcName string, funcs []BuiltInFunctions) func(context *FormulaContext)
 
 	//IsDefined check if the current JS value is defined
 	IsDefined(vmValue interface{}) bool

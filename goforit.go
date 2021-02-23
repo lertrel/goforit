@@ -123,7 +123,7 @@ func (b FormulaBuilder) SetDriver(driver VMDriver) FormulaBuilder {
 //Get to obtain a new Formula
 func (b FormulaBuilder) Get() Formula {
 
-	repos := make(map[int]CustomFunctionRepository)
+	repos := make([]CustomFunctionRepository, len(b.repos)+1)
 
 	i := 0
 	repos[i] = DefaultCustomFunctionRepository{customFuncs: make(map[string]string)}
@@ -133,7 +133,7 @@ func (b FormulaBuilder) Get() Formula {
 		repos[i] = r
 	}
 
-	funcs := make(map[int]BuiltInFunctions)
+	funcs := make([]BuiltInFunctions, len(b.funcs)+1)
 
 	i = 0
 	funcs[i] = DefaultBuiltInFunctions{}
