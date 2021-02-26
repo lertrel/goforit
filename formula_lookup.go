@@ -14,7 +14,7 @@ type FormulaLookup interface {
 	GetAllFormulas() (FormulaIterator, error)
 
 	//GetAllFormulas search all FormulaConfig(s) that matches the given Trigger
-	GetFormulars(trigger Trigger, context map[string]string) (FormulaIterator, error)
+	GetFormulars(trigger Trigger, context map[string]interface{}) (FormulaIterator, error)
 }
 
 //FormulaIterator a interator of FormulaConfig

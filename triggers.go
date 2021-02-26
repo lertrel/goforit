@@ -73,82 +73,28 @@ func (b TriggersBuilder) Get() Triggers {
 		panic(errors.New("A FormulaLookup is yet to be defined"))
 	}
 
-	return Triggers{
+	return SimpleTriggers{
 		formulaBuilder: fb,
 		triggerLookup:  b.triggerLookup,
 		formulaLookup:  b.formulaLookup,
+		formula:        fb.Get(),
 	}
 }
 
 //Triggers so-called a controller layer to help executing external formula
 //related to a pre-defined trigger point
-type Triggers struct {
-	formulaBuilder FormulaBuilder
-	triggerLookup  TriggerLookup
-	formulaLookup  FormulaLookup
-	formula        Formula
-}
+type Triggers interface {
 
-//Execute executing formulas for a given trigger point with the states
-//provided in context
-//
-//Triggers will find Trigger definition by looking up into TriggerLookup
-//
-//Then, will find formula(s) matches with the trigger definitions by looking up
-//FormulaLookup
-//
-//Then executing the matches formula(s) under the FormulaContext created by
-//FormulaBuilder
-//
-func (t Triggers) Execute(trigger string, context map[string]string) (map[string]JSValue, error) {
-
-	triggerDef, lookupTriggerErr := t.triggerLookup.GetTrigger(trigger)
-	if lookupTriggerErr != nil {
-		return nil, lookupTriggerErr
-	}
-
-	formulas, lookupFormulaErr := t.formulaLookup.GetFormulars(triggerDef, context)
-	if lookupFormulaErr != nil {
-		return nil, lookupFormulaErr
-	}
-
-	if !formulas.HasNext() {
-		return nil, errors.New("No matched formula found for trigger - " + trigger)
-	}
-
-	formulaDef := formulas.Next()
-
-	f, _ := t.getFormula(triggerDef)
-	fc, parseScriptErr := f.LoadContext(nil, formulaDef.Body)
-	if parseScriptErr != nil {
-		return nil, parseScriptErr
-	}
-
-	t.mapInputs(*fc, context, formulaDef)
-	ret, runtimeErr := fc.Run(formulaDef.Body)
-	if runtimeErr != nil {
-		return nil, runtimeErr
-	}
-
-	arr := make(map[string]JSValue)
-
-	t.mapOutputs(*fc, arr, formulaDef)
-	arr["return"] = ret
-
-	return arr, nil
-}
-
-func (t Triggers) getFormula(trigger Trigger) (Formula, error) {
-
-	panic("Not yet implemented")
-}
-
-func (t Triggers) mapInputs(f FormulaContext, context map[string]string, c FormulaConfig) {
-
-	panic("Not yet implemented")
-}
-
-func (t Triggers) mapOutputs(f FormulaContext, result map[string]JSValue, c FormulaConfig) {
-
-	panic("Not yet implemented")
+	//Execute executing formulas for a given trigger point with the states
+	//provided in context
+	//
+	//Triggers will find Trigger definition by looking up into TriggerLookup
+	//
+	//Then, will find formula(s) matches with the trigger definitions by looking up
+	//FormulaLookup
+	//
+	//Then executing the matches formula(s) under the FormulaContext created by
+	//FormulaBuilder
+	//
+	Execute(trigger string, context map[string]interface{}) (map[string]interface{}, error)
 }
