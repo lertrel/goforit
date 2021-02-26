@@ -88,7 +88,7 @@ func fAbs(vm VM, funcDef interface{}) interface{} {
 
 func fRnd(vm VM, funcDef interface{}) interface{} {
 
-	vm.ValidateFuncArguments("$ABS", 2, funcDef)
+	vm.ValidateFuncArguments("$RND", 2, funcDef)
 
 	v := vm.GetFuncArgAsFloat(funcDef, 0)
 	p := vm.GetFuncArgAsInt(funcDef, 1)
