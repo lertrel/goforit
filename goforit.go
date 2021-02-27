@@ -5,22 +5,6 @@ import (
 	"github.com/lertrel/goforit/trigger"
 )
 
-// var debugFlag = false
-
-//Get An entry point to obtain Formula
-// func Get() Formula {
-
-// 	r, _ := regexp.Compile("(\\$[^\\$()\\s]+)\\(")
-
-// 	return Formula{r: r, customFuncs: make(map[string]string), Debug: false}
-// }
-// func debug(b bool, format string, args ...interface{}) {
-// 	// if b {
-// 	// 	log.Printf(format, args...)
-// 	// }
-// 	util.Debug(b, format, args...)
-// }
-
 //NewFormulaBuilder To obtain formula builder
 //
 //Ex.

@@ -18,8 +18,8 @@ type FormulaContext interface {
 	// 		str := `
 	// 		$IF(true, 1, 2)
 	// 		`
-	// 		f := goforit.GetFormularBuilder().Get()
-	// 		c, err := f.LoadContext(nil, str)
+	// 		f := goforit.NewFormularBuilder().Get()
+	// 		c, err := f.NewContext(str)
 	// 		if err != nil {
 	// 			t.Error(err)
 	// 		}
@@ -41,8 +41,8 @@ type FormulaContext interface {
 	// 		f = $SUMF(1.5, $SUMF($MAX(1.2, 1.1), $ABS(-1.39)), $IF(i == 15, 5.0, 6.0));
 	// 		`
 	//
-	// 		f := goforit.GetFormularBuilder().Get()
-	// 		c, err := f.LoadContext(nil, str)
+	// 		f := goforit.NewFormularBuilder().Get()
+	// 		c, err := f.NewContext(str)
 	// 		if err != nil {
 	// 			t.Error(err)
 	// 		}
@@ -63,7 +63,7 @@ type FormulaContext interface {
 	//
 	//Ex.
 	//
-	//		f := goforit.GetFormularBuilder().Get()
+	//		f := goforit.NewFormularBuilder().Get()
 	// 		str := `
 	// 		area1 = $RND(Math.sqrt($SUMF($RND(a*3,2), $RND(b*4,2), $RND(c*5,2))), 10);
 	// 		area2 = $CIRCLE(radius);
@@ -72,7 +72,7 @@ type FormulaContext interface {
 	// 		console.log("c="+c);
 	// 		console.log("radius="+radius);
 	// 		`
-	// 		c, err := f.LoadContext(nil, str)
+	// 		c, err := f.NewContext(str)
 	// 		if err != nil {
 	// 			t.Error(err)
 	// 		}

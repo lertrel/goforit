@@ -30,7 +30,7 @@ func (f DefaultFormula) debug(format string, args ...interface{}) {
 //RegisterCustomFunction for registering custom function
 //Ex.
 //
-// 		f := goforit.GetFormularBuilder().Get()
+// 		f := goforit.NewFormularBuilder().Get()
 // 		f.RegisterCustomFunction(
 // 			"$CIRCLE",
 // 			`
