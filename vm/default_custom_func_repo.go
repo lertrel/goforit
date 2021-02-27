@@ -1,8 +1,14 @@
-package goforit
+package vm
 
 //DefaultCustomFunctionRepository default implementation CustomFunctionRepository
 type DefaultCustomFunctionRepository struct {
 	customFuncs map[string]string
+}
+
+//NewCustomFunctionRepo is a public function to obtain a deafult
+//implementation of CustomFunctionRepository
+func NewCustomFunctionRepo() CustomFunctionRepository {
+	return DefaultCustomFunctionRepository{customFuncs: make(map[string]string)}
 }
 
 //RegisterCustomFunction for registering custom function

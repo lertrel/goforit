@@ -1,6 +1,10 @@
 package goforit
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/lertrel/goforit/model"
+)
 
 //SimpleTriggers simple implementation of Triggers
 type SimpleTriggers struct {
@@ -54,7 +58,7 @@ func (t SimpleTriggers) Execute(trigger string, context map[string]interface{}) 
 	//Mapping context states as formula inputs
 	//by following input mapping rule provided
 	//by the trigger definition
-	if err = t.mapInputs(fc, context, triggerDef); err != nil {
+	if err = t.mapInputs(&fc, context, triggerDef); err != nil {
 		return
 	}
 
@@ -67,7 +71,7 @@ func (t SimpleTriggers) Execute(trigger string, context map[string]interface{}) 
 	//Mapping script variables (in VM) as outputs
 	//by following input mapping rule provided
 	//by the trigger definition
-	result, err = t.mapOutputs(fc, triggerDef)
+	result, err = t.mapOutputs(&fc, triggerDef)
 	if err != nil {
 		return
 	}
@@ -82,28 +86,28 @@ func (t SimpleTriggers) getFormula(trigger Trigger) (Formula, error) {
 	return t.formula, nil
 }
 
-func (t SimpleTriggers) mapInputs(f *FormulaContext, context map[string]interface{}, c Trigger) (err error) {
+func (t SimpleTriggers) mapInputs(f *model.FormulaContext, context map[string]interface{}, c Trigger) (err error) {
 
 	if c.InputMapping == "" {
 		return
 	}
 
-	if err = f.Set(c.ContextVarName, context); err != nil {
+	if err = (*f).Set(c.ContextVarName, context); err != nil {
 		return
 	}
 
-	f, err = t.formula.LoadContext(f, c.InputMapping)
+	*f, err = t.formula.LoadContext(*f, c.InputMapping)
 	if err != nil {
 		return
 	}
 
 	//Falls through
-	_, err = f.Run(c.InputMapping)
+	_, err = (*f).Run(c.InputMapping)
 
 	return
 }
 
-func (t SimpleTriggers) mapOutputs(f *FormulaContext, c Trigger) (result map[string]interface{}, err error) {
+func (t SimpleTriggers) mapOutputs(f *model.FormulaContext, c Trigger) (result map[string]interface{}, err error) {
 
 	result = make(map[string]interface{})
 

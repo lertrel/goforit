@@ -1,10 +1,11 @@
-package goforit
+package vm
 
 import (
 	"errors"
 	"fmt"
 	"regexp"
 
+	"github.com/lertrel/goforit/model"
 	"github.com/robertkrimen/otto"
 )
 
@@ -69,7 +70,7 @@ type OttoVM struct {
 }
 
 //Run for running a given script/formual
-func (v OttoVM) Run(formulaString string) (JSValue, error) {
+func (v OttoVM) Run(formulaString string) (model.Value, error) {
 
 	value, err := v.vm.Run(formulaString)
 	if err != nil {
@@ -82,7 +83,7 @@ func (v OttoVM) Run(formulaString string) (JSValue, error) {
 }
 
 //Get getting value of a variable out of scripting context
-func (v OttoVM) Get(varname string) (JSValue, error) {
+func (v OttoVM) Get(varname string) (model.Value, error) {
 
 	value, err := v.vm.Get(varname)
 	if err != nil {
@@ -165,14 +166,14 @@ func (v OttoVM) ToVMValue(goValue interface{}) interface{} {
 }
 
 //GetBuiltInFunc getting a function for registering / connecting
-func (v OttoVM) GetBuiltInFunc(funcName string, funcs []BuiltInFunctions) func(context *FormulaContext) {
+func (v OttoVM) GetBuiltInFunc(funcName string, funcs []BuiltInFunctions) func(context *model.FormulaContext) {
 
 	// for _, f := range v.funcs {
 	for _, f := range funcs {
 
 		if f.Has(funcName) {
 
-			return func(context *FormulaContext) {
+			return func(context *model.FormulaContext) {
 
 				// ctxVM := context.VM.(OttoVM)
 

@@ -1,4 +1,6 @@
-package goforit
+package vm
+
+import "github.com/lertrel/goforit/model"
 
 //JSValue a placeholder for a java script value
 type JSValue struct {
@@ -8,7 +10,7 @@ type JSValue struct {
 }
 
 //NewJSValue create a new JSValue
-func NewJSValue(vm VM, impl interface{}) JSValue {
+func NewJSValue(vm VM, impl interface{}) model.Value {
 
 	return JSValue{vm: vm, impl: impl}
 }

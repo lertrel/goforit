@@ -1,4 +1,4 @@
-package goforit
+package vm
 
 //BuiltInFunctions an interface provided as an extenstion point
 //for client to provide their own built-in functions

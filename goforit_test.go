@@ -15,7 +15,6 @@ func TestSimpleFormula(t *testing.T) {
 abc = 2 + 2;
 console.log("The value of abc is " + abc); // 4
 `
-
 	f := Get()
 	c, err := f.LoadContext(nil, str)
 	if err != nil {

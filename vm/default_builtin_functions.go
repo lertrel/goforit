@@ -1,4 +1,4 @@
-package goforit
+package vm
 
 import (
 	"errors"

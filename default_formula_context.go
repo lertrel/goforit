@@ -1,10 +1,15 @@
 package goforit
 
-//FormulaContext a formula context created by parsing formula string
+import (
+	"github.com/lertrel/goforit/model"
+	"github.com/lertrel/goforit/vm"
+)
+
+//DefaultFormulaContext a formula context created by parsing formula string
 //Any formula string have to be parsed into a context before using
-type FormulaContext struct {
+type DefaultFormulaContext struct {
 	// VM          *otto.Otto
-	VM          VM
+	VM          vm.VM
 	loadedFuncs map[string]bool
 	Debug       bool
 }
@@ -37,7 +42,7 @@ type FormulaContext struct {
 // 		goI, _ := jsI.ToInteger()
 // 		t.Logf("goI = %v\n", goI)
 //
-func (c FormulaContext) Run(formulaString string) (JSValue, error) {
+func (c DefaultFormulaContext) Run(formulaString string) (model.Value, error) {
 
 	return c.VM.Run(formulaString)
 }
@@ -76,7 +81,7 @@ func (c FormulaContext) Run(formulaString string) (JSValue, error) {
 // 		jsF, _ := c.Get("f")
 // 		goF, _ := jsF.ToFloat()
 //
-func (c FormulaContext) Get(varname string) (JSValue, error) {
+func (c DefaultFormulaContext) Get(varname string) (model.Value, error) {
 
 	return c.VM.Get(varname)
 }
@@ -126,7 +131,7 @@ func (c FormulaContext) Get(varname string) (JSValue, error) {
 // 		area1, _ := jsArea1.ToFloat()
 // 		area2, _ := jsArea2.ToFloat()
 //
-func (c FormulaContext) Set(varname string, value interface{}) error {
+func (c DefaultFormulaContext) Set(varname string, value interface{}) error {
 
 	err := c.VM.Set(varname, value)
 	if err != nil {
@@ -137,11 +142,11 @@ func (c FormulaContext) Set(varname string, value interface{}) error {
 	return nil
 }
 
-func (c FormulaContext) debug(format string, args ...interface{}) {
+func (c DefaultFormulaContext) debug(format string, args ...interface{}) {
 	debug(debugFlag || c.Debug, format, args...)
 }
 
-func (c FormulaContext) isFuncLoaded(funcName string) bool {
+func (c DefaultFormulaContext) isFuncLoaded(funcName string) bool {
 
 	_, found := c.loadedFuncs[funcName]
 
@@ -151,7 +156,7 @@ func (c FormulaContext) isFuncLoaded(funcName string) bool {
 	return found
 }
 
-func (c *FormulaContext) markFuncAsLoaded(funcName string, loaded bool) {
+func (c *DefaultFormulaContext) markFuncAsLoaded(funcName string, loaded bool) {
 
 	c.debug("FormulaContext.markFuncAsLoaded(before) - c.loadedFunc=%v", c.loadedFuncs)
 	c.loadedFuncs[funcName] = loaded

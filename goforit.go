@@ -2,6 +2,8 @@ package goforit
 
 import (
 	"log"
+
+	"github.com/lertrel/goforit/vm"
 )
 
 var debugFlag = false
@@ -30,7 +32,7 @@ func GetFormulaBuilder() FormulaBuilder {
 
 	return FormulaBuilder{
 		Debug:  false,
-		repos:  make(map[CustomFunctionRepository]CustomFunctionRepository),
+		repos:  make(map[vm.CustomFunctionRepository]vm.CustomFunctionRepository),
 		Driver: nil,
 	}
 }
@@ -38,9 +40,9 @@ func GetFormulaBuilder() FormulaBuilder {
 //FormulaBuilder a formula builder
 type FormulaBuilder struct {
 	Debug  bool
-	repos  map[CustomFunctionRepository]CustomFunctionRepository
-	funcs  map[BuiltInFunctions]BuiltInFunctions
-	Driver VMDriver
+	repos  map[vm.CustomFunctionRepository]vm.CustomFunctionRepository
+	funcs  map[vm.BuiltInFunctions]vm.BuiltInFunctions
+	Driver vm.VMDriver
 }
 
 //SetDebug setting debug flag (if yes log wll be printed)
@@ -61,7 +63,7 @@ func (b FormulaBuilder) SetDebug(debug bool) FormulaBuilder {
 //
 //With this, it's allow client to have freedom to store and provide
 //customer functions from various sources e.g., DB, files, etc.
-func (b FormulaBuilder) AddCustomFunctionRepository(repo CustomFunctionRepository) FormulaBuilder {
+func (b FormulaBuilder) AddCustomFunctionRepository(repo vm.CustomFunctionRepository) FormulaBuilder {
 
 	b2 := FormulaBuilder{
 		Debug:  b.Debug,
@@ -91,7 +93,7 @@ func (b FormulaBuilder) AddCustomFunctionRepository(repo CustomFunctionRepositor
 //the built-in functions are implemented in Go and loaded as static packages
 //together with client program, so not need for VM to intrepret this fucntions
 //so basically it should run faster than the custom functions
-func (b FormulaBuilder) AddBuiltInFunctions(funcs BuiltInFunctions) FormulaBuilder {
+func (b FormulaBuilder) AddBuiltInFunctions(funcs vm.BuiltInFunctions) FormulaBuilder {
 
 	b2 := FormulaBuilder{
 		Debug:  b.Debug,
@@ -110,7 +112,7 @@ func (b FormulaBuilder) AddBuiltInFunctions(funcs BuiltInFunctions) FormulaBuild
 }
 
 //SetDriver allow client to use another VM rather than the default one
-func (b FormulaBuilder) SetDriver(driver VMDriver) FormulaBuilder {
+func (b FormulaBuilder) SetDriver(driver vm.VMDriver) FormulaBuilder {
 
 	return FormulaBuilder{
 		Debug:  b.Debug,
@@ -123,27 +125,27 @@ func (b FormulaBuilder) SetDriver(driver VMDriver) FormulaBuilder {
 //Get to obtain a new Formula
 func (b FormulaBuilder) Get() Formula {
 
-	repos := make([]CustomFunctionRepository, len(b.repos)+1)
+	repos := make([]vm.CustomFunctionRepository, len(b.repos)+1)
 
 	i := 0
-	repos[i] = DefaultCustomFunctionRepository{customFuncs: make(map[string]string)}
+	repos[i] = vm.NewCustomFunctionRepo()
 
 	for r := range b.repos {
 		i++
 		repos[i] = r
 	}
 
-	funcs := make([]BuiltInFunctions, len(b.funcs)+1)
+	funcs := make([]vm.BuiltInFunctions, len(b.funcs)+1)
 
 	i = 0
-	funcs[i] = DefaultBuiltInFunctions{}
+	funcs[i] = vm.DefaultBuiltInFunctions{}
 
 	for r := range b.funcs {
 		i++
 		funcs[i] = r
 	}
 
-	var driver VMDriver
+	var driver vm.VMDriver
 
 	if b.Driver != nil {
 		driver = b.Driver

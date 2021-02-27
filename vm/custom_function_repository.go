@@ -1,4 +1,4 @@
-package goforit
+package vm
 
 //CustomFunctionRepository repository inside Formula
 //to maintain custom functions

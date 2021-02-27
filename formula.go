@@ -1,14 +1,19 @@
 package goforit
 
+import (
+	"github.com/lertrel/goforit/model"
+	"github.com/lertrel/goforit/vm"
+)
+
 //Formula a formula engine for creating Formulacontext
 type Formula struct {
-	driver VMDriver
+	driver vm.VMDriver
 	// r      *regexp.Regexp
 	// customFuncs map[string]string
 	// customFuncs  map[int]CustomFunctionRepository
-	customFuncs []CustomFunctionRepository
+	customFuncs []vm.CustomFunctionRepository
 	// builtInFuncs map[int]BuiltInFunctions
-	builtInFuncs []BuiltInFunctions
+	builtInFuncs []vm.BuiltInFunctions
 	Debug        bool
 }
 
@@ -54,20 +59,20 @@ func (f Formula) extractFunctionListFromFormulaString(formulaStr string) []strin
 }
 
 // func (f Formula) newFormulaContext(vm VM) *FormulaContext {
-func (f Formula) newFormulaContext() (*FormulaContext, error) {
+func (f Formula) newFormulaContext() (c DefaultFormulaContext, err error) {
 
-	vm, vmErr := f.driver.Get()
-	if vmErr != nil {
-		return nil, vmErr
+	vm, err := f.driver.Get()
+	if err != nil {
+		return
 	}
 
-	return &FormulaContext{VM: vm, loadedFuncs: make(map[string]bool), Debug: f.Debug}, nil
+	return DefaultFormulaContext{VM: vm, loadedFuncs: make(map[string]bool), Debug: f.Debug}, nil
 }
 
 //LoadContext If context is nil then create a new FormulaContext
 //Then preparing a newly created context or a given context
 //By loading referred functions (both built-in & custom) into context
-func (f Formula) LoadContext(context *FormulaContext, formulaStr string) (c *FormulaContext, err error) {
+func (f Formula) LoadContext(context model.FormulaContext, formulaStr string) (c model.FormulaContext, err error) {
 
 	// defer func() {
 	// 	if r := recover(); r != nil {
@@ -76,6 +81,8 @@ func (f Formula) LoadContext(context *FormulaContext, formulaStr string) (c *For
 	// 	}
 	// }()
 
+	var contextImpl DefaultFormulaContext
+	c = context
 	if context == nil {
 		// context = &	FormulaContext{vm: otto.New()}
 		// context = &FormulaContext{vm: otto.New(), loadedFuncs: make(map[string]bool), Debug: f.Debug}
@@ -86,11 +93,11 @@ func (f Formula) LoadContext(context *FormulaContext, formulaStr string) (c *For
 
 		//Falls through
 		// context = f.newFormulaContext(vm)
-		var contextErr error
-		context, contextErr = f.newFormulaContext()
-		if contextErr != nil {
-			return nil, contextErr
+		contextImpl, err = f.newFormulaContext()
+		if err != nil {
+			return
 		}
+		c = contextImpl
 	}
 
 	f.debug("Formula.LoadContext() - Extracting function names from %v", formulaStr)
@@ -99,16 +106,16 @@ func (f Formula) LoadContext(context *FormulaContext, formulaStr string) (c *For
 	for i := 0; i < len(funcList); i++ {
 
 		f.debug("Formula.LoadContext() - funcList[i]=%v", funcList[i])
-		err := f.injectFuncToContext(context, funcList[i])
+		err := f.injectFuncToContext(&contextImpl, funcList[i])
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return context, nil
+	return
 }
 
-func (f Formula) injectFuncToContext(context *FormulaContext, funcName string) error {
+func (f Formula) injectFuncToContext(context *DefaultFormulaContext, funcName string) error {
 
 	f.debug("Formula.injectFuncToContext() started ...")
 
@@ -126,7 +133,8 @@ func (f Formula) injectFuncToContext(context *FormulaContext, funcName string) e
 	// if fn := context.VM.GetBuiltInFunc(funcName); fn != nil {
 	if fn := context.VM.GetBuiltInFunc(funcName, f.builtInFuncs); fn != nil {
 		context.markFuncAsLoaded(funcName, false)
-		fn(context)
+		var c model.FormulaContext = context
+		fn(&c)
 		context.markFuncAsLoaded(funcName, true)
 
 		return nil
