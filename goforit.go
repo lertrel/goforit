@@ -1,8 +1,9 @@
 package goforit
 
 import (
-	"log"
-
+	"github.com/lertrel/goforit/impl"
+	"github.com/lertrel/goforit/model"
+	"github.com/lertrel/goforit/util"
 	"github.com/lertrel/goforit/vm"
 )
 
@@ -16,19 +17,20 @@ var debugFlag = false
 // 	return Formula{r: r, customFuncs: make(map[string]string), Debug: false}
 // }
 func debug(b bool, format string, args ...interface{}) {
-	if b {
-		log.Printf(format, args...)
-	}
+	// if b {
+	// 	log.Printf(format, args...)
+	// }
+	util.Debug(b, format, args...)
 }
 
-//GetFormulaBuilder To obtain formula builder
+//NewFormulaBuilder To obtain formula builder
 //
 //Ex.
 //
-//		builder := GetFormulaBuilder()
+//		builder := NewFormulaBuilder()
 //		formula := builder.Get()
 //
-func GetFormulaBuilder() FormulaBuilder {
+func NewFormulaBuilder() FormulaBuilder {
 
 	return FormulaBuilder{
 		Debug:  false,
@@ -37,12 +39,17 @@ func GetFormulaBuilder() FormulaBuilder {
 	}
 }
 
+//NewTriggersBuilder to get TriggersBuilder
+func NewTriggersBuilder() TriggersBuilder {
+	return TriggersBuilder{}
+}
+
 //FormulaBuilder a formula builder
 type FormulaBuilder struct {
 	Debug  bool
 	repos  map[vm.CustomFunctionRepository]vm.CustomFunctionRepository
 	funcs  map[vm.BuiltInFunctions]vm.BuiltInFunctions
-	Driver vm.VMDriver
+	Driver vm.Driver
 }
 
 //SetDebug setting debug flag (if yes log wll be printed)
@@ -112,7 +119,7 @@ func (b FormulaBuilder) AddBuiltInFunctions(funcs vm.BuiltInFunctions) FormulaBu
 }
 
 //SetDriver allow client to use another VM rather than the default one
-func (b FormulaBuilder) SetDriver(driver vm.VMDriver) FormulaBuilder {
+func (b FormulaBuilder) SetDriver(driver vm.Driver) FormulaBuilder {
 
 	return FormulaBuilder{
 		Debug:  b.Debug,
@@ -123,7 +130,7 @@ func (b FormulaBuilder) SetDriver(driver vm.VMDriver) FormulaBuilder {
 }
 
 //Get to obtain a new Formula
-func (b FormulaBuilder) Get() Formula {
+func (b FormulaBuilder) Get() model.Formula {
 
 	repos := make([]vm.CustomFunctionRepository, len(b.repos)+1)
 
@@ -138,26 +145,26 @@ func (b FormulaBuilder) Get() Formula {
 	funcs := make([]vm.BuiltInFunctions, len(b.funcs)+1)
 
 	i = 0
-	funcs[i] = vm.DefaultBuiltInFunctions{}
+	funcs[i] = vm.NewBuiltInFunctions()
 
 	for r := range b.funcs {
 		i++
 		funcs[i] = r
 	}
 
-	var driver vm.VMDriver
+	var driver vm.Driver
 
 	if b.Driver != nil {
 		driver = b.Driver
 	} else {
 		// driver = GetVMDriver(funcs)
-		driver = GetVMDriver()
+		driver = NewVMDriver()
 	}
 
-	return Formula{
-		driver:       driver,
-		customFuncs:  repos,
-		builtInFuncs: funcs,
+	return impl.DefaultFormula{
+		VM:           driver,
+		CustomFuncs:  repos,
+		BuiltInFuncs: funcs,
 		Debug:        b.Debug,
 	}
 }

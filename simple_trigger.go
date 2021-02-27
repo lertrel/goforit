@@ -11,7 +11,7 @@ type SimpleTriggers struct {
 	formulaBuilder FormulaBuilder
 	triggerLookup  TriggerLookup
 	formulaLookup  FormulaLookup
-	formula        Formula
+	formula        model.Formula
 }
 
 //Execute executing formulas for a given trigger point with the states
@@ -81,7 +81,7 @@ func (t SimpleTriggers) Execute(trigger string, context map[string]interface{}) 
 	return
 }
 
-func (t SimpleTriggers) getFormula(trigger Trigger) (Formula, error) {
+func (t SimpleTriggers) getFormula(trigger Trigger) (model.Formula, error) {
 
 	return t.formula, nil
 }

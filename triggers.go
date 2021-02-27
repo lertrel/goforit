@@ -2,11 +2,6 @@ package goforit
 
 import "errors"
 
-//GetTriggersBuilder to get TriggersBuilder
-func GetTriggersBuilder() TriggersBuilder {
-	return TriggersBuilder{}
-}
-
 //TriggersBuilder a builder for Formulas
 type TriggersBuilder struct {
 	formulaBuilder      FormulaBuilder
@@ -61,7 +56,7 @@ func (b TriggersBuilder) Get() Triggers {
 
 	fb := b.formulaBuilder
 	if !b.isFormulaBuilderSet {
-		fb = GetFormulaBuilder()
+		fb = NewFormulaBuilder()
 		debug(true, "No specific FormulaBuilder is defined, using default")
 	}
 

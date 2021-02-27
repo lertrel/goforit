@@ -11,7 +11,7 @@ func NewCustomFunctionRepo() CustomFunctionRepository {
 	return DefaultCustomFunctionRepository{customFuncs: make(map[string]string)}
 }
 
-//RegisterCustomFunction for registering custom function
+//RegisterFunction for registering custom function
 //Ex.
 //
 // 		r.RegisterCustomFunction(
@@ -22,7 +22,7 @@ func NewCustomFunctionRepo() CustomFunctionRepository {
 // 			}
 // 			`)
 //
-func (r DefaultCustomFunctionRepository) RegisterCustomFunction(funcName string, body string) bool {
+func (r DefaultCustomFunctionRepository) RegisterFunction(funcName string, body string) bool {
 
 	_, found := r.customFuncs[funcName]
 
@@ -31,8 +31,8 @@ func (r DefaultCustomFunctionRepository) RegisterCustomFunction(funcName string,
 	return found
 }
 
-//GetCustomFuncBody to get custom function source code
-func (r DefaultCustomFunctionRepository) GetCustomFuncBody(funcName string) string {
+//GetFunctionBody to get custom function source code
+func (r DefaultCustomFunctionRepository) GetFunctionBody(funcName string) string {
 
 	body, found := r.customFuncs[funcName]
 

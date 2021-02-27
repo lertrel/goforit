@@ -9,8 +9,8 @@ type JSValue struct {
 	impl interface{}
 }
 
-//NewJSValue create a new JSValue
-func NewJSValue(vm VM, impl interface{}) model.Value {
+//NewValue create a (new) default implementation of model.Value
+func NewValue(vm VM, impl interface{}) model.Value {
 
 	return JSValue{vm: vm, impl: impl}
 }

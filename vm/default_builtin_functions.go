@@ -7,6 +7,12 @@ import (
 	"strconv"
 )
 
+//NewBuiltInFunctions is returning a default implementation
+//of BuiltInFunctions
+func NewBuiltInFunctions() BuiltInFunctions {
+	return DefaultBuiltInFunctions{}
+}
+
 //DefaultBuiltInFunctions providing built-in functions shipped with goforit
 type DefaultBuiltInFunctions struct {
 }

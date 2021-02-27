@@ -1,7 +1,8 @@
-package goforit
+package impl
 
 import (
 	"github.com/lertrel/goforit/model"
+	"github.com/lertrel/goforit/util"
 	"github.com/lertrel/goforit/vm"
 )
 
@@ -11,7 +12,7 @@ type DefaultFormulaContext struct {
 	// VM          *otto.Otto
 	VM          vm.VM
 	loadedFuncs map[string]bool
-	formula     Formula
+	formula     DefaultFormula
 	Debug       bool
 }
 
@@ -164,7 +165,7 @@ func (c DefaultFormulaContext) Set(varname string, value interface{}) error {
 }
 
 func (c DefaultFormulaContext) debug(format string, args ...interface{}) {
-	debug(debugFlag || c.Debug, format, args...)
+	util.Debug(c.Debug, format, args...)
 }
 
 func (c DefaultFormulaContext) isFuncLoaded(funcName string) bool {

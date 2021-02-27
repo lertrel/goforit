@@ -5,9 +5,11 @@ import (
 	"math"
 	"reflect"
 	"testing"
+
+	"github.com/lertrel/goforit/model"
 )
 
-var f Formula
+var f model.Formula
 
 func NewTriggerLookup(t Trigger) TriggerLookup {
 
@@ -82,7 +84,7 @@ func (it MockFormulaIterator) Next() (config FormulaConfig) {
 
 func newTriggers() (triggers SimpleTriggers) {
 
-	f = GetFormulaBuilder().Get()
+	f = NewFormulaBuilder().Get()
 	tl := NewTriggerLookup(newTrigger(
 		`
 	p = context['principal']

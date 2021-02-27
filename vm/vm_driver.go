@@ -2,9 +2,9 @@ package vm
 
 import "github.com/lertrel/goforit/model"
 
-//VMDriver An interface for implementing driver
+//Driver An interface for implementing driver
 //for specific VM/scripting implementation
-type VMDriver interface {
+type Driver interface {
 
 	//Get getting VM implementation of this driver
 	Get() (VM, error)
@@ -13,11 +13,11 @@ type VMDriver interface {
 	//another VM to reduce constructing overhead
 	SetTemplate(vm VM)
 
-	//ExtractFunctionListFromFormulaString extracting functions names
+	//ExtractFunctionNames extracting functions names
 	//from the given script/formular so that the function can be loaded
 	//by Formula.LoadContext() before being executed, otherwise the
 	//unloaded functions will not be known to the scripting/VM engine
-	ExtractFunctionListFromFormulaString(formulaStr string) []string
+	ExtractFunctionNames(formulaStr string) []string
 }
 
 //VM an interface acting as an abstract layer of VM implementation

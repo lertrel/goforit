@@ -1,24 +1,30 @@
-package goforit
+package impl
 
 import (
 	"github.com/lertrel/goforit/model"
+	"github.com/lertrel/goforit/util"
 	"github.com/lertrel/goforit/vm"
 )
 
-//Formula a formula engine for creating Formulacontext
-type Formula struct {
-	driver vm.VMDriver
+//DefaultFormula a formula engine for creating Formulacontext
+type DefaultFormula struct {
+	VM vm.Driver
 	// r      *regexp.Regexp
-	// customFuncs map[string]string
-	// customFuncs  map[int]CustomFunctionRepository
-	customFuncs []vm.CustomFunctionRepository
-	// builtInFuncs map[int]BuiltInFunctions
-	builtInFuncs []vm.BuiltInFunctions
+	// CustomFuncs map[string]string
+	// CustomFuncs  map[int]CustomFunctionRepository
+	CustomFuncs []vm.CustomFunctionRepository
+	// BuiltInFuncs map[int]BuiltInFunctions
+	BuiltInFuncs []vm.BuiltInFunctions
 	Debug        bool
 }
 
-func (f Formula) debug(format string, args ...interface{}) {
-	debug(debugFlag || f.Debug, format, args...)
+//Driver is a method for getting vm.Driver implementation
+func (f DefaultFormula) Driver() vm.Driver {
+	return f.VM
+}
+
+func (f DefaultFormula) debug(format string, args ...interface{}) {
+	util.Debug(f.Debug, format, args...)
 }
 
 //RegisterCustomFunction for registering custom function
@@ -33,17 +39,17 @@ func (f Formula) debug(format string, args ...interface{}) {
 // 			}
 // 		`)
 //
-func (f *Formula) RegisterCustomFunction(funcName string, body string) bool {
+func (f DefaultFormula) RegisterCustomFunction(funcName string, body string) bool {
 
-	return f.customFuncs[0].RegisterCustomFunction(funcName, body)
+	return f.CustomFuncs[0].RegisterFunction(funcName, body)
 }
 
-//GetCustomFuncBody to get custom function source code
-func (f Formula) GetCustomFuncBody(funcName string) string {
+//GetCustomFunctionBody to get custom function source code
+func (f DefaultFormula) GetCustomFunctionBody(funcName string) string {
 
-	for _, repo := range f.customFuncs {
+	for _, repo := range f.CustomFuncs {
 
-		if body := repo.GetCustomFuncBody(funcName); body != "" {
+		if body := repo.GetFunctionBody(funcName); body != "" {
 
 			return body
 		}
@@ -53,15 +59,15 @@ func (f Formula) GetCustomFuncBody(funcName string) string {
 	return ""
 }
 
-func (f Formula) extractFunctionListFromFormulaString(formulaStr string) []string {
+func (f DefaultFormula) extractFunctionListFromFormulaString(formulaStr string) []string {
 
-	return f.driver.ExtractFunctionListFromFormulaString(formulaStr)
+	return f.VM.ExtractFunctionNames(formulaStr)
 }
 
 //NewContext is a method for creating a new FormulaContext
-func (f Formula) NewContext(script string) (c model.FormulaContext, err error) {
+func (f DefaultFormula) NewContext(script string) (c model.FormulaContext, err error) {
 
-	vm, err := f.driver.Get()
+	vm, err := f.VM.Get()
 	if err != nil {
 		return
 	}
@@ -130,7 +136,7 @@ func (f Formula) NewContext(script string) (c model.FormulaContext, err error) {
 // 	return
 // }
 
-func (f Formula) injectFuncToContext(context *DefaultFormulaContext, funcName string) error {
+func (f DefaultFormula) injectFuncToContext(context *DefaultFormulaContext, funcName string) error {
 
 	f.debug("Formula.injectFuncToContext() started ...")
 
@@ -146,7 +152,7 @@ func (f Formula) injectFuncToContext(context *DefaultFormulaContext, funcName st
 	// 	return nil
 	// }
 	// if fn := context.VM.GetBuiltInFunc(funcName); fn != nil {
-	if fn := context.VM.GetBuiltInFunc(funcName, f.builtInFuncs); fn != nil {
+	if fn := context.VM.GetBuiltInFunc(funcName, f.BuiltInFuncs); fn != nil {
 		context.markFuncAsLoaded(funcName, false)
 		var c model.FormulaContext = context
 		fn(&c)
@@ -155,7 +161,7 @@ func (f Formula) injectFuncToContext(context *DefaultFormulaContext, funcName st
 		return nil
 	}
 
-	if body := f.GetCustomFuncBody(funcName); body != "" {
+	if body := f.GetCustomFunctionBody(funcName); body != "" {
 
 		f.debug("Formula.injectFuncToContext() - body=%v", body)
 		context.markFuncAsLoaded(funcName, false)

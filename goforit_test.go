@@ -2,11 +2,15 @@ package goforit
 
 import (
 	"testing"
+
+	"github.com/lertrel/goforit/parse"
+
+	"github.com/lertrel/goforit/model"
 )
 
-func Get() Formula {
+func Get() model.Formula {
 
-	return GetFormulaBuilder().SetDebug(false).Get()
+	return NewFormulaBuilder().SetDebug(false).Get()
 }
 
 func TestSimpleFormula(t *testing.T) {
@@ -504,8 +508,7 @@ func TestExtractFunctionListFromFormulaString(t *testing.T) {
 		};	
 `
 
-	f := Get()
-	listOfFuncs := f.extractFunctionListFromFormulaString(src)
+	listOfFuncs := parse.New().ExtractFunctionNames(src)
 
 	if len(listOfFuncs) != 6 {
 		t.Error("Expected arror of length = 6")
