@@ -1,4 +1,4 @@
-package goforit
+package trigger
 
 //Trigger represting a trigger setup
 type Trigger struct {

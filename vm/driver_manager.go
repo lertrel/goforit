@@ -1,13 +1,11 @@
-package goforit
-
-import "github.com/lertrel/goforit/vm"
+package vm
 
 //NewVMDriver providing default VM driver (currently otto)
 //Another VM can be used by modifying this file to provide
 //a desirable implmentation of VMDriver
-func NewVMDriver() vm.Driver {
+func NewVMDriver() Driver {
 
-	return &vm.OttoDriver{}
+	return &OttoDriver{}
 }
 
 // func GetVMDriver(funcs map[int]BuiltInFunctions) VMDriver {

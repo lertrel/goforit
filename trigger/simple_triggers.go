@@ -1,4 +1,4 @@
-package goforit
+package trigger
 
 import (
 	"errors"
@@ -8,10 +8,9 @@ import (
 
 //SimpleTriggers simple implementation of Triggers
 type SimpleTriggers struct {
-	formulaBuilder FormulaBuilder
-	triggerLookup  TriggerLookup
-	formulaLookup  FormulaLookup
-	formula        model.Formula
+	triggerLookup TriggerLookup
+	formulaLookup FormulaLookup
+	formula       model.Formula
 }
 
 //Execute executing formulas for a given trigger point with the states

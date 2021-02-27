@@ -1,27 +1,31 @@
-package goforit
+package trigger
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/lertrel/goforit/model"
+)
 
 //TriggersBuilder a builder for Formulas
 type TriggersBuilder struct {
-	formulaBuilder      FormulaBuilder
-	isFormulaBuilderSet bool
-	triggerLookup       TriggerLookup
-	isTriggerLookupSet  bool
-	formulaLookup       FormulaLookup
-	isFormulaLookupSet  bool
+	formula            model.Formula
+	isFormulaSet       bool
+	triggerLookup      TriggerLookup
+	isTriggerLookupSet bool
+	formulaLookup      FormulaLookup
+	isFormulaLookupSet bool
 }
 
 //SetFormulaBuilder setting FormulaBuilder
-func (b TriggersBuilder) SetFormulaBuilder(builder FormulaBuilder) TriggersBuilder {
+func (b TriggersBuilder) SetFormulaBuilder(formula model.Formula) TriggersBuilder {
 
 	return TriggersBuilder{
-		formulaBuilder:      builder,
-		isFormulaBuilderSet: true,
-		triggerLookup:       b.triggerLookup,
-		isTriggerLookupSet:  b.isTriggerLookupSet,
-		formulaLookup:       b.formulaLookup,
-		isFormulaLookupSet:  b.isFormulaLookupSet,
+		formula:            formula,
+		isFormulaSet:       true,
+		triggerLookup:      b.triggerLookup,
+		isTriggerLookupSet: b.isTriggerLookupSet,
+		formulaLookup:      b.formulaLookup,
+		isFormulaLookupSet: b.isFormulaLookupSet,
 	}
 }
 
@@ -29,12 +33,12 @@ func (b TriggersBuilder) SetFormulaBuilder(builder FormulaBuilder) TriggersBuild
 func (b TriggersBuilder) SetTriggerLookup(lookup TriggerLookup) TriggersBuilder {
 
 	return TriggersBuilder{
-		formulaBuilder:      b.formulaBuilder,
-		isFormulaBuilderSet: b.isFormulaBuilderSet,
-		triggerLookup:       lookup,
-		isTriggerLookupSet:  true,
-		formulaLookup:       b.formulaLookup,
-		isFormulaLookupSet:  b.isFormulaLookupSet,
+		formula:            b.formula,
+		isFormulaSet:       b.isFormulaSet,
+		triggerLookup:      lookup,
+		isTriggerLookupSet: true,
+		formulaLookup:      b.formulaLookup,
+		isFormulaLookupSet: b.isFormulaLookupSet,
 	}
 }
 
@@ -42,22 +46,21 @@ func (b TriggersBuilder) SetTriggerLookup(lookup TriggerLookup) TriggersBuilder 
 func (b TriggersBuilder) SetFormulaLookup(lookup FormulaLookup) TriggersBuilder {
 
 	return TriggersBuilder{
-		formulaBuilder:      b.formulaBuilder,
-		isFormulaBuilderSet: b.isFormulaBuilderSet,
-		triggerLookup:       b.triggerLookup,
-		isTriggerLookupSet:  b.isTriggerLookupSet,
-		formulaLookup:       lookup,
-		isFormulaLookupSet:  true,
+		formula:            b.formula,
+		isFormulaSet:       b.isFormulaSet,
+		triggerLookup:      b.triggerLookup,
+		isTriggerLookupSet: b.isTriggerLookupSet,
+		formulaLookup:      lookup,
+		isFormulaLookupSet: true,
 	}
 }
 
 //Get get Triggers
 func (b TriggersBuilder) Get() Triggers {
 
-	fb := b.formulaBuilder
-	if !b.isFormulaBuilderSet {
-		fb = NewFormulaBuilder()
-		debug(true, "No specific FormulaBuilder is defined, using default")
+	fb := b.formula
+	if !b.isFormulaSet {
+		panic(errors.New("A Formula is yet to be defined"))
 	}
 
 	if !b.isTriggerLookupSet {
@@ -69,10 +72,9 @@ func (b TriggersBuilder) Get() Triggers {
 	}
 
 	return SimpleTriggers{
-		formulaBuilder: fb,
-		triggerLookup:  b.triggerLookup,
-		formulaLookup:  b.formulaLookup,
-		formula:        fb.Get(),
+		triggerLookup: b.triggerLookup,
+		formulaLookup: b.formulaLookup,
+		formula:       fb,
 	}
 }
 

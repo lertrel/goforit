@@ -1,4 +1,4 @@
-package goforit
+package trigger
 
 //FormulaLookup a formula config repository
 //

@@ -1,4 +1,4 @@
-package goforit
+package trigger
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/lertrel/goforit/builder"
 	"github.com/lertrel/goforit/model"
 )
 
@@ -84,7 +85,7 @@ func (it MockFormulaIterator) Next() (config FormulaConfig) {
 
 func newTriggers() (triggers SimpleTriggers) {
 
-	f = NewFormulaBuilder().Get()
+	f = builder.NewFormulaBuilder().Get()
 	tl := NewTriggerLookup(newTrigger(
 		`
 	p = context['principal']

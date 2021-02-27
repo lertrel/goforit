@@ -1,4 +1,4 @@
-package goforit
+package trigger
 
 //TriggerLookup Trigger repository
 type TriggerLookup interface {
