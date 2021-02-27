@@ -11,7 +11,28 @@ type DefaultFormulaContext struct {
 	// VM          *otto.Otto
 	VM          vm.VM
 	loadedFuncs map[string]bool
+	formula     Formula
 	Debug       bool
+}
+
+//Prepare If context is nil then create a new FormulaContext
+//Then preparing a newly created context or a given context
+//By loading referred functions (both built-in & custom) into context
+func (c DefaultFormulaContext) Prepare(formulaStr string) error {
+
+	c.debug("DefualtFormulaContext.Prepare() - Extracting function names from %v", formulaStr)
+	funcList := c.formula.extractFunctionListFromFormulaString(formulaStr)
+
+	for i := 0; i < len(funcList); i++ {
+
+		c.debug("DefualtFormulaContext.Prepare() - funcList[i]=%v", funcList[i])
+		err := c.formula.injectFuncToContext(&c, funcList[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // func (c FormulaContext) GetVM() *otto.Otto {

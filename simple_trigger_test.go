@@ -165,17 +165,16 @@ func TestMapInputsHappy(t *testing.T) {
 	triggers := newTriggers()
 	trigger := newTrigger("r = context['r']; pi = context['pi'];", "")
 	f, _ := triggers.getFormula(trigger)
-	fc, _ := f.LoadContext(nil, "")
+	fc, _ := f.NewContext("")
 	context := make(map[string]interface{})
 
 	context["r"] = 0.5
 	context["pi"] = math.Pi
 
-	triggers.mapInputs(fc, context, trigger)
+	triggers.mapInputs(&fc, context, trigger)
 
 	script := "$CIRCLE(r, pi, context)"
-	fc, err := f.LoadContext(fc, script)
-	if err != nil {
+	if err := fc.Prepare(script); err != nil {
 		t.Error(err)
 	}
 
@@ -222,25 +221,22 @@ func TestMapInputsNoMapping(t *testing.T) {
 	triggers := newTriggers()
 	trigger := newTrigger("", "")
 	f, _ := triggers.getFormula(trigger)
-	fc, _ := f.LoadContext(nil, "")
+	fc, _ := f.NewContext("")
 	context := make(map[string]interface{})
 
 	context["r"] = 0.5
 	context["pi"] = math.Pi
 
-	triggers.mapInputs(fc, context, trigger)
+	triggers.mapInputs(&fc, context, trigger)
 
 	script := "$CIRCLE(r, pi, context)"
-	fc, err := f.LoadContext(fc, script)
-	if err != nil {
+	if err := fc.Prepare(script); err != nil {
 		t.Error(err)
 	}
 
-	if _, err = fc.Run(script); err == nil {
+	if _, err := fc.Run(script); err == nil {
 		t.Error(err)
 	}
-
-	fmt.Println(err)
 
 }
 
@@ -249,17 +245,16 @@ func TestMapOutputsHappy(t *testing.T) {
 	triggers := newTriggers()
 	trigger := newTrigger("r = context['r']; pi = context['pi'];", "output['area'] = area;")
 	f, _ := triggers.getFormula(trigger)
-	fc, _ := f.LoadContext(nil, "")
+	fc, _ := f.NewContext("")
 	context := make(map[string]interface{})
 
 	context["r"] = 0.5
 	context["pi"] = math.Pi
 
-	triggers.mapInputs(fc, context, trigger)
+	triggers.mapInputs(&fc, context, trigger)
 
 	script := "area = pi * r * r; console.log('JS: area='+area); result = area;"
-	fc, err := f.LoadContext(fc, script)
-	if err != nil {
+	if err := fc.Prepare(script); err != nil {
 		t.Error(err)
 	}
 
@@ -274,7 +269,7 @@ func TestMapOutputsHappy(t *testing.T) {
 	}
 	fmt.Println("GO: goRet=", goRet)
 
-	output, err := triggers.mapOutputs(fc, trigger)
+	output, err := triggers.mapOutputs(&fc, trigger)
 
 	goArea, ok := output["area"]
 	if !ok {
@@ -294,17 +289,16 @@ func TestMapOutputsNoMapping(t *testing.T) {
 	triggers := newTriggers()
 	trigger := newTrigger("r = context['r']; pi = context['pi'];", "")
 	f, _ := triggers.getFormula(trigger)
-	fc, _ := f.LoadContext(nil, "")
+	fc, _ := f.NewContext("")
 	context := make(map[string]interface{})
 
 	context["r"] = 0.5
 	context["pi"] = math.Pi
 
-	triggers.mapInputs(fc, context, trigger)
+	triggers.mapInputs(&fc, context, trigger)
 
 	script := "area = pi * r * r;"
-	fc, err := f.LoadContext(fc, script)
-	if err != nil {
+	if err := fc.Prepare(script); err != nil {
 		t.Error(err)
 	}
 
@@ -319,7 +313,7 @@ func TestMapOutputsNoMapping(t *testing.T) {
 	}
 	fmt.Println("GO: goRet=", goRet)
 
-	output, err := triggers.mapOutputs(fc, trigger)
+	output, err := triggers.mapOutputs(&fc, trigger)
 
 	goArea, ok := output["area"]
 	if ok {

@@ -16,7 +16,7 @@ abc = 2 + 2;
 console.log("The value of abc is " + abc); // 4
 `
 	f := Get()
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext("")
 	if err != nil {
 		t.Error(err)
 	}
@@ -37,7 +37,7 @@ console.log("f = " + f);
 `
 
 	f := Get()
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -77,7 +77,7 @@ $SUMI(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 `
 
 	f := Get()
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -105,7 +105,7 @@ func TestSUMF(t *testing.T) {
 	`
 
 	f := Get()
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -133,7 +133,7 @@ $MIN(6, 7, 8, 9, 10, 5.2, 5.5, 5.1)
 `
 
 	f := Get()
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -161,7 +161,7 @@ $MAX(6, 7, 8, 9, 10, 5.2, 5.5, 5.1)
 `
 
 	f := Get()
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -189,7 +189,7 @@ func TestAVG(t *testing.T) {
 	`
 
 	f := Get()
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -217,7 +217,7 @@ func TestABS(t *testing.T) {
 	`
 
 	f := Get()
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -245,7 +245,7 @@ func TestRND(t *testing.T) {
 	`
 
 	f := Get()
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -309,7 +309,7 @@ func TestCEIL(t *testing.T) {
 	`
 
 	f := Get()
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -373,7 +373,7 @@ func TestFLOOR(t *testing.T) {
 	`
 
 	f := Get()
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -437,7 +437,7 @@ func TestIF(t *testing.T) {
 	`
 
 	f := Get()
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -547,7 +547,7 @@ func TestCustomFormulaSimple(t *testing.T) {
 $PREMIUM1("M", 5, [1.1, 1.2, 1.3, 1.4, 1.5, 1.615], 100000)
 `
 
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -569,7 +569,7 @@ $PREMIUM1("M", 5, [1.1, 1.2, 1.3, 1.4, 1.5, 1.615], 100000)
 $PREMIUM1("F", 5, [1.1, 1.2, 1.3, 1.4, 1.5, 1.615], 100000)
 `
 
-	c, err = f.LoadContext(nil, str)
+	c, err = f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -654,7 +654,7 @@ func TestCustomFormulaComplex(t *testing.T) {
 	str := `
 $PREMIUM2("M", 1, [1.1, 1.2, 1.3], 100000, [2.1, 2.2, 2.3], 50000, [3.1, 3.2, 3.3], 4555)
 `
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -675,7 +675,7 @@ $PREMIUM2("M", 1, [1.1, 1.2, 1.3], 100000, [2.1, 2.2, 2.3], 50000, [3.1, 3.2, 3.
 	str = `
 $PREMIUM2("F", 1, [1.1, 1.2, 1.3], 100000, [2.1, 2.2, 2.3], 50000, [3.1, 3.2, 3.3], 4555)
 `
-	c, err = f.LoadContext(c, str)
+	c, err = f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}
@@ -715,7 +715,7 @@ console.log("b="+b);
 console.log("c="+c);
 console.log("radius="+radius);
 `
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		t.Error(err)
 	}

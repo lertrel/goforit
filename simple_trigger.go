@@ -50,7 +50,7 @@ func (t SimpleTriggers) Execute(trigger string, context map[string]interface{}) 
 	//Obtaining formula engine
 	f, _ := t.getFormula(triggerDef)
 	//Creating a new formula context to run this formula
-	fc, err := f.LoadContext(nil, formulaDef.Body)
+	fc, err := f.NewContext(formulaDef.Body)
 	if err != nil {
 		return
 	}
@@ -96,8 +96,7 @@ func (t SimpleTriggers) mapInputs(f *model.FormulaContext, context map[string]in
 		return
 	}
 
-	*f, err = t.formula.LoadContext(*f, c.InputMapping)
-	if err != nil {
+	if err = (*f).Prepare(c.InputMapping); err != nil {
 		return
 	}
 
@@ -115,17 +114,16 @@ func (t SimpleTriggers) mapOutputs(f *model.FormulaContext, c Trigger) (result m
 		return
 	}
 
-	if err = f.Set(c.OutputVarName, result); err != nil {
+	if err = (*f).Set(c.OutputVarName, result); err != nil {
 		return
 	}
 
-	f, err = t.formula.LoadContext(f, c.OuputMapping)
-	if err != nil {
+	if err = (*f).Prepare(c.OuputMapping); err != nil {
 		return
 	}
 
 	//Falls through
-	_, err = f.Run(c.OuputMapping)
+	_, err = (*f).Run(c.OuputMapping)
 
 	return
 }

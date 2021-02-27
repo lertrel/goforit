@@ -58,62 +58,77 @@ func (f Formula) extractFunctionListFromFormulaString(formulaStr string) []strin
 	return f.driver.ExtractFunctionListFromFormulaString(formulaStr)
 }
 
-// func (f Formula) newFormulaContext(vm VM) *FormulaContext {
-func (f Formula) newFormulaContext() (c DefaultFormulaContext, err error) {
+//NewContext is a method for creating a new FormulaContext
+func (f Formula) NewContext(script string) (c model.FormulaContext, err error) {
 
 	vm, err := f.driver.Get()
 	if err != nil {
 		return
 	}
 
-	return DefaultFormulaContext{VM: vm, loadedFuncs: make(map[string]bool), Debug: f.Debug}, nil
-}
-
-//LoadContext If context is nil then create a new FormulaContext
-//Then preparing a newly created context or a given context
-//By loading referred functions (both built-in & custom) into context
-func (f Formula) LoadContext(context model.FormulaContext, formulaStr string) (c model.FormulaContext, err error) {
-
-	// defer func() {
-	// 	if r := recover(); r != nil {
-	// 		c = nil
-	// 		err = r.(error)
-	// 	}
-	// }()
-
-	var contextImpl DefaultFormulaContext
-	c = context
-	if context == nil {
-		// context = &	FormulaContext{vm: otto.New()}
-		// context = &FormulaContext{vm: otto.New(), loadedFuncs: make(map[string]bool), Debug: f.Debug}
-		// vm, vmErr := f.driver.Get()
-		// if vmErr != nil {
-		// 	return nil, vmErr
-		// }
-
-		//Falls through
-		// context = f.newFormulaContext(vm)
-		contextImpl, err = f.newFormulaContext()
-		if err != nil {
-			return
-		}
-		c = contextImpl
+	c = DefaultFormulaContext{
+		VM:          vm,
+		loadedFuncs: make(map[string]bool),
+		formula:     f,
+		Debug:       f.Debug,
 	}
 
-	f.debug("Formula.LoadContext() - Extracting function names from %v", formulaStr)
-	funcList := f.extractFunctionListFromFormulaString(formulaStr)
-
-	for i := 0; i < len(funcList); i++ {
-
-		f.debug("Formula.LoadContext() - funcList[i]=%v", funcList[i])
-		err := f.injectFuncToContext(&contextImpl, funcList[i])
-		if err != nil {
+	if script != "" {
+		if err = c.Prepare(script); err != nil {
 			return nil, err
 		}
 	}
 
 	return
 }
+
+//LoadContext If context is nil then create a new FormulaContext
+//Then preparing a newly created context or a given context
+//By loading referred functions (both built-in & custom) into context
+// func (f Formula) LoadContext(context model.FormulaContext, formulaStr string) (c model.FormulaContext, err error) {
+
+// 	// defer func() {
+// 	// 	if r := recover(); r != nil {
+// 	// 		c = nil
+// 	// 		err = r.(error)
+// 	// 	}
+// 	// }()
+
+// 	var contextImpl DefaultFormulaContext
+// 	c = context
+// 	if context == nil {
+// 		// context = &	FormulaContext{vm: otto.New()}
+// 		// context = &FormulaContext{vm: otto.New(), loadedFuncs: make(map[string]bool), Debug: f.Debug}
+// 		// vm, vmErr := f.driver.Get()
+// 		// if vmErr != nil {
+// 		// 	return nil, vmErr
+// 		// }
+
+// 		//Falls through
+// 		// context = f.newFormulaContext(vm)
+// 		var contextTemp model.FormulaContext
+// 		contextTemp, err = f.NewContext()
+// 		if err != nil {
+// 			return
+// 		}
+// 		contextImpl = contextTemp.(DefaultFormulaContext)
+// 		c = contextImpl
+// 	}
+
+// 	f.debug("Formula.LoadContext() - Extracting function names from %v", formulaStr)
+// 	funcList := f.extractFunctionListFromFormulaString(formulaStr)
+
+// 	for i := 0; i < len(funcList); i++ {
+
+// 		f.debug("Formula.LoadContext() - funcList[i]=%v", funcList[i])
+// 		err := f.injectFuncToContext(&contextImpl, funcList[i])
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 	}
+
+// 	return
+// }
 
 func (f Formula) injectFuncToContext(context *DefaultFormulaContext, funcName string) error {
 
