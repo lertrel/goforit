@@ -8,7 +8,7 @@ import (
 
 //SimpleTriggers simple implementation of Triggers
 type SimpleTriggers struct {
-	triggerLookup TriggerLookup
+	triggerLookup Lookup
 	formulaLookup FormulaLookup
 	formula       model.Formula
 }

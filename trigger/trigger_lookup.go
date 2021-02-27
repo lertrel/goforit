@@ -1,20 +1,20 @@
 package trigger
 
-//TriggerLookup Trigger repository
-type TriggerLookup interface {
+//Lookup Trigger repository
+type Lookup interface {
 
 	//GetTrigger getting Trigger by name
 	GetTrigger(triggerName string) (Trigger, error)
 
 	//GetAllTriggers getting all Trigger(s)
-	GetAllTriggers() (TriggerIterator, error)
+	GetAllTriggers() (Iterator, error)
 
 	//GetTriggers search all Trigger(s) that matches the given filter (script)
-	GetTriggers(filter string) (TriggerIterator, error)
+	GetTriggers(filter string) (Iterator, error)
 }
 
-//TriggerIterator a interator of Trigger
-type TriggerIterator interface {
+//Iterator a interator of Trigger
+type Iterator interface {
 	HasNext() bool
 	Next() Trigger
 }

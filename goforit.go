@@ -3,10 +3,9 @@ package goforit
 import (
 	"github.com/lertrel/goforit/builder"
 	"github.com/lertrel/goforit/trigger"
-	"github.com/lertrel/goforit/util"
 )
 
-var debugFlag = false
+// var debugFlag = false
 
 //Get An entry point to obtain Formula
 // func Get() Formula {
@@ -15,12 +14,12 @@ var debugFlag = false
 
 // 	return Formula{r: r, customFuncs: make(map[string]string), Debug: false}
 // }
-func debug(b bool, format string, args ...interface{}) {
-	// if b {
-	// 	log.Printf(format, args...)
-	// }
-	util.Debug(b, format, args...)
-}
+// func debug(b bool, format string, args ...interface{}) {
+// 	// if b {
+// 	// 	log.Printf(format, args...)
+// 	// }
+// 	util.Debug(b, format, args...)
+// }
 
 //NewFormulaBuilder To obtain formula builder
 //
