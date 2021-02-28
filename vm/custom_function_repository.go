@@ -1,13 +1,13 @@
-package goforit
+package vm
 
 //CustomFunctionRepository repository inside Formula
 //to maintain custom functions
 type CustomFunctionRepository interface {
 
-	//RegisterCustomFunction for registering custom function
+	//RegisterFunction for registering custom function
 	//Ex.
 	//
-	// 		r.RegisterCustomFunction(
+	// 		r.RegisterFunction(
 	// 			"$CIRCLE",
 	// 			`
 	// 			function $CIRCLE(radius) {
@@ -15,8 +15,8 @@ type CustomFunctionRepository interface {
 	// 			}
 	// 			`)
 	//
-	RegisterCustomFunction(funcName string, body string) bool
+	RegisterFunction(funcName string, body string) bool
 
-	//GetCustomFuncBody to get custom function source code
-	GetCustomFuncBody(funcName string) string
+	//GetFunctionBody to get custom function source code
+	GetFunctionBody(funcName string) string
 }

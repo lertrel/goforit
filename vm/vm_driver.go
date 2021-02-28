@@ -1,8 +1,10 @@
-package goforit
+package vm
 
-//VMDriver An interface for implementing driver
+import "github.com/lertrel/goforit/model"
+
+//Driver An interface for implementing driver
 //for specific VM/scripting implementation
-type VMDriver interface {
+type Driver interface {
 
 	//Get getting VM implementation of this driver
 	Get() (VM, error)
@@ -11,11 +13,11 @@ type VMDriver interface {
 	//another VM to reduce constructing overhead
 	SetTemplate(vm VM)
 
-	//ExtractFunctionListFromFormulaString extracting functions names
+	//ExtractFunctionNames extracting functions names
 	//from the given script/formular so that the function can be loaded
 	//by Formula.LoadContext() before being executed, otherwise the
 	//unloaded functions will not be known to the scripting/VM engine
-	ExtractFunctionListFromFormulaString(formulaStr string) []string
+	ExtractFunctionNames(formulaStr string) []string
 }
 
 //VM an interface acting as an abstract layer of VM implementation
@@ -27,10 +29,10 @@ type VMDriver interface {
 type VM interface {
 
 	//Run for running a given script/formual
-	Run(formulaString string) (JSValue, error)
+	Run(formulaString string) (model.Value, error)
 
 	//Get getting value of a variable out of scripting context
-	Get(varname string) (JSValue, error)
+	Get(varname string) (model.Value, error)
 
 	//Set setting value of a valiable inside scripting context
 	Set(varname string, value interface{}) error
@@ -96,7 +98,7 @@ type VM interface {
 	//
 	// 		return nil
 	//
-	GetBuiltInFunc(funcName string, funcs []BuiltInFunctions) func(context *FormulaContext)
+	GetBuiltInFunc(funcName string, funcs []BuiltInFunctions) func(context *model.FormulaContext)
 
 	//IsDefined check if the current JS value is defined
 	IsDefined(vmValue interface{}) bool

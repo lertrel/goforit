@@ -1,4 +1,4 @@
-package goforit
+package trigger
 
 //FormulaConfig representing (probably persisted) formula
 //and its custom attributes (for matching with triggers)
