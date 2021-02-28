@@ -3,14 +3,14 @@ package trigger
 //Lookup Trigger repository
 type Lookup interface {
 
-	//GetTrigger getting Trigger by name
+	//GetTrigger getting Trigger by ID
 	GetTrigger(triggerName string) (Trigger, error)
 
-	//GetAllTriggers getting all Trigger(s)
-	GetAllTriggers() (Iterator, error)
+	//Triggers getting all Trigger(s)
+	Triggers() (Iterator, error)
 
 	//GetTriggers search all Trigger(s) that matches the given filter (script)
-	GetTriggers(filter string) (Iterator, error)
+	// GetTriggers(filter string) (Iterator, error)
 }
 
 //Iterator a interator of Trigger

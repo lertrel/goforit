@@ -28,14 +28,14 @@ func (tl mockTriggerLookup) GetTrigger(triggerName string) (Trigger, error) {
 }
 
 //GetAllTriggers getting all Trigger(s)
-func (tl mockTriggerLookup) GetAllTriggers() (Iterator, error) {
+func (tl mockTriggerLookup) Triggers() (Iterator, error) {
 	panic("")
 }
 
 //GetTriggers search all Trigger(s) that matches the given filter (script)
-func (tl mockTriggerLookup) GetTriggers(filter string) (Iterator, error) {
-	panic("")
-}
+// func (tl mockTriggerLookup) GetTriggers(filter string) (Iterator, error) {
+// 	panic("")
+// }
 
 func newFormulaLookup(c FormulaConfig) FormulaLookup {
 
