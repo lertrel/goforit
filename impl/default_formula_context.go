@@ -1,12 +1,39 @@
-package goforit
+package impl
 
-//FormulaContext a formula context created by parsing formula string
+import (
+	"github.com/lertrel/goforit/model"
+	"github.com/lertrel/goforit/util"
+	"github.com/lertrel/goforit/vm"
+)
+
+//DefaultFormulaContext a formula context created by parsing formula string
 //Any formula string have to be parsed into a context before using
-type FormulaContext struct {
+type DefaultFormulaContext struct {
 	// VM          *otto.Otto
-	VM          VM
+	VM          vm.VM
 	loadedFuncs map[string]bool
+	formula     DefaultFormula
 	Debug       bool
+}
+
+//Prepare If context is nil then create a new FormulaContext
+//Then preparing a newly created context or a given context
+//By loading referred functions (both built-in & custom) into context
+func (c DefaultFormulaContext) Prepare(formulaStr string) error {
+
+	c.debug("DefualtFormulaContext.Prepare() - Extracting function names from %v", formulaStr)
+	funcList := c.formula.extractFunctionListFromFormulaString(formulaStr)
+
+	for i := 0; i < len(funcList); i++ {
+
+		c.debug("DefualtFormulaContext.Prepare() - funcList[i]=%v", funcList[i])
+		err := c.formula.injectFuncToContext(&c, funcList[i])
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // func (c FormulaContext) GetVM() *otto.Otto {
@@ -23,8 +50,8 @@ type FormulaContext struct {
 // 		str := `
 // 		$IF(true, 1, 2)
 // 		`
-// 		f := goforit.GetFormularBuilder().Get()
-// 		c, err := f.LoadContext(nil, str)
+// 		f := goforit.NewFormularBuilder().Get()
+// 		c, err := f.NewContext(str)
 // 		if err != nil {
 // 			t.Error(err)
 // 		}
@@ -37,7 +64,7 @@ type FormulaContext struct {
 // 		goI, _ := jsI.ToInteger()
 // 		t.Logf("goI = %v\n", goI)
 //
-func (c FormulaContext) Run(formulaString string) (JSValue, error) {
+func (c DefaultFormulaContext) Run(formulaString string) (model.Value, error) {
 
 	return c.VM.Run(formulaString)
 }
@@ -60,8 +87,8 @@ func (c FormulaContext) Run(formulaString string) (JSValue, error) {
 // 		f = $SUMF(1.5, $SUMF($MAX(1.2, 1.1), $ABS(-1.39)), $IF(i == 15, 5.0, 6.0));
 // 		`
 //
-// 		f := goforit.GetFormularBuilder().Get()
-// 		c, err := f.LoadContext(nil, str)
+// 		f := goforit.NewFormularBuilder().Get()
+// 		c, err := f.NewContext(str)
 // 		if err != nil {
 // 			t.Error(err)
 // 		}
@@ -76,7 +103,7 @@ func (c FormulaContext) Run(formulaString string) (JSValue, error) {
 // 		jsF, _ := c.Get("f")
 // 		goF, _ := jsF.ToFloat()
 //
-func (c FormulaContext) Get(varname string) (JSValue, error) {
+func (c DefaultFormulaContext) Get(varname string) (model.Value, error) {
 
 	return c.VM.Get(varname)
 }
@@ -96,7 +123,7 @@ func (c FormulaContext) Get(varname string) (JSValue, error) {
 //
 //Ex.
 //
-//		f := goforit.GetFormularBuilder().Get()
+//		f := goforit.NewFormularBuilder().Get()
 // 		str := `
 // 		area1 = $RND(Math.sqrt($SUMF($RND(a*3,2), $RND(b*4,2), $RND(c*5,2))), 10);
 // 		area2 = $CIRCLE(radius);
@@ -105,7 +132,7 @@ func (c FormulaContext) Get(varname string) (JSValue, error) {
 // 		console.log("c="+c);
 // 		console.log("radius="+radius);
 // 		`
-// 		c, err := f.LoadContext(nil, str)
+// 		c, err := f.NewContext(str)
 // 		if err != nil {
 // 			t.Error(err)
 // 		}
@@ -126,7 +153,7 @@ func (c FormulaContext) Get(varname string) (JSValue, error) {
 // 		area1, _ := jsArea1.ToFloat()
 // 		area2, _ := jsArea2.ToFloat()
 //
-func (c FormulaContext) Set(varname string, value interface{}) error {
+func (c DefaultFormulaContext) Set(varname string, value interface{}) error {
 
 	err := c.VM.Set(varname, value)
 	if err != nil {
@@ -137,11 +164,11 @@ func (c FormulaContext) Set(varname string, value interface{}) error {
 	return nil
 }
 
-func (c FormulaContext) debug(format string, args ...interface{}) {
-	debug(debugFlag || c.Debug, format, args...)
+func (c DefaultFormulaContext) debug(format string, args ...interface{}) {
+	util.Debug(c.Debug, format, args...)
 }
 
-func (c FormulaContext) isFuncLoaded(funcName string) bool {
+func (c DefaultFormulaContext) isFuncLoaded(funcName string) bool {
 
 	_, found := c.loadedFuncs[funcName]
 
@@ -151,7 +178,7 @@ func (c FormulaContext) isFuncLoaded(funcName string) bool {
 	return found
 }
 
-func (c *FormulaContext) markFuncAsLoaded(funcName string, loaded bool) {
+func (c *DefaultFormulaContext) markFuncAsLoaded(funcName string, loaded bool) {
 
 	c.debug("FormulaContext.markFuncAsLoaded(before) - c.loadedFunc=%v", c.loadedFuncs)
 	c.loadedFuncs[funcName] = loaded

@@ -1,11 +1,11 @@
-package goforit
+package vm
 
-//GetVMDriver providing default VM driver (currently otto)
+//NewVMDriver providing default VM driver (currently otto)
 //Another VM can be used by modifying this file to provide
 //a desirable implmentation of VMDriver
-func GetVMDriver() VMDriver {
+func NewVMDriver() Driver {
 
-	return &OttoVMDriver{}
+	return &OttoDriver{}
 }
 
 // func GetVMDriver(funcs map[int]BuiltInFunctions) VMDriver {

@@ -1,23 +1,25 @@
-package goforit
+package vm
 
 import (
 	"errors"
 	"fmt"
-	"regexp"
 
+	"github.com/lertrel/goforit/model"
+	"github.com/lertrel/goforit/parse"
 	"github.com/robertkrimen/otto"
 )
 
-var r, _ = regexp.Compile("(\\$[^\\$()\\s]+)\\(")
+// var r, _ = regexp.Compile("(\\$[^\\$()\\s]+)\\(")
+var r = parse.New()
 
-//OttoVMDriver otto implementation of VMDriver
-type OttoVMDriver struct {
+//OttoDriver otto implementation of VMDriver
+type OttoDriver struct {
 	templateVM VM
 	// funcs      map[int]BuiltInFunctions
 }
 
 //Get getting VM implementation of this driver
-func (d OttoVMDriver) Get() (VM, error) {
+func (d OttoDriver) Get() (VM, error) {
 
 	if d.templateVM != nil {
 
@@ -34,32 +36,33 @@ func (d OttoVMDriver) Get() (VM, error) {
 
 //SetTemplate set template VM, this VM will be used for cloning
 //another VM to reduce constructing overhead
-func (d *OttoVMDriver) SetTemplate(template VM) {
+func (d *OttoDriver) SetTemplate(template VM) {
 	d.templateVM = template
 }
 
-//ExtractFunctionListFromFormulaString extracting functions names
+//ExtractFunctionNames extracting functions names
 //from the given script/formular so that the function can be loaded
 //by Formula.LoadContext() before being executed, otherwise the
 //unloaded functions will not be known to the scripting/VM engine
-func (d OttoVMDriver) ExtractFunctionListFromFormulaString(formulaStr string) []string {
+func (d OttoDriver) ExtractFunctionNames(formulaStr string) []string {
 
-	matches := r.FindAllStringSubmatch(formulaStr, -1)
-	dedupMatches := make(map[string]bool)
+	return r.ExtractFunctionNames(formulaStr)
+	// matches := r.FindAllStringSubmatch(formulaStr, -1)
+	// dedupMatches := make(map[string]bool)
 
-	for i := 0; i < len(matches); i++ {
-		dedupMatches[matches[i][1]] = true
-	}
+	// for i := 0; i < len(matches); i++ {
+	// 	dedupMatches[matches[i][1]] = true
+	// }
 
-	funArr := make([]string, len(dedupMatches))
+	// funArr := make([]string, len(dedupMatches))
 
-	i := 0
-	for k := range dedupMatches {
-		funArr[i] = k
-		i++
-	}
+	// i := 0
+	// for k := range dedupMatches {
+	// 	funArr[i] = k
+	// 	i++
+	// }
 
-	return funArr
+	// return funArr
 }
 
 //OttoVM otto implementation of VM (abstract layer)
@@ -69,30 +72,30 @@ type OttoVM struct {
 }
 
 //Run for running a given script/formual
-func (v OttoVM) Run(formulaString string) (JSValue, error) {
+func (v OttoVM) Run(formulaString string) (model.Value, error) {
 
 	value, err := v.vm.Run(formulaString)
 	if err != nil {
-		return NewJSValue(nil, nil), err
+		return NewValue(nil, nil), err
 	}
 
 	//Falls through
 	// return JSValue{impl: value}, nil
-	return NewJSValue(v, value), nil
+	return NewValue(v, value), nil
 }
 
 //Get getting value of a variable out of scripting context
-func (v OttoVM) Get(varname string) (JSValue, error) {
+func (v OttoVM) Get(varname string) (model.Value, error) {
 
 	value, err := v.vm.Get(varname)
 	if err != nil {
 		// return JSValue{}, err
-		return NewJSValue(nil, nil), err
+		return NewValue(nil, nil), err
 	}
 
 	//Falls through
 	// return JSValue{impl: value}, nil
-	return NewJSValue(v, value), nil
+	return NewValue(v, value), nil
 }
 
 //Set setting value of a valiable inside scripting context
@@ -165,14 +168,14 @@ func (v OttoVM) ToVMValue(goValue interface{}) interface{} {
 }
 
 //GetBuiltInFunc getting a function for registering / connecting
-func (v OttoVM) GetBuiltInFunc(funcName string, funcs []BuiltInFunctions) func(context *FormulaContext) {
+func (v OttoVM) GetBuiltInFunc(funcName string, funcs []BuiltInFunctions) func(context *model.FormulaContext) {
 
 	// for _, f := range v.funcs {
 	for _, f := range funcs {
 
 		if f.Has(funcName) {
 
-			return func(context *FormulaContext) {
+			return func(context *model.FormulaContext) {
 
 				// ctxVM := context.VM.(OttoVM)
 
