@@ -13,7 +13,7 @@ type Lookup interface {
 	// GetTriggers(filter string) (Iterator, error)
 }
 
-//Iterator a interator of Trigger
+//Iterator a iterator of Trigger
 type Iterator interface {
 	HasNext() bool
 	Next() Trigger

@@ -91,8 +91,10 @@ func (t SimpleTriggers) mapInputs(f *model.FormulaContext, context map[string]in
 		return
 	}
 
-	if err = (*f).Set(c.ContextVarName, context); err != nil {
-		return
+	if c.ContextVarName != "" {
+		if err = (*f).Set(c.ContextVarName, context); err != nil {
+			return
+		}
 	}
 
 	if err = (*f).Prepare(c.InputMapping); err != nil {
@@ -113,8 +115,10 @@ func (t SimpleTriggers) mapOutputs(f *model.FormulaContext, c Trigger) (result m
 		return
 	}
 
-	if err = (*f).Set(c.OutputVarName, result); err != nil {
-		return
+	if c.OutputVarName != "" {
+		if err = (*f).Set(c.OutputVarName, result); err != nil {
+			return
+		}
 	}
 
 	if err = (*f).Prepare(c.OuputMapping); err != nil {

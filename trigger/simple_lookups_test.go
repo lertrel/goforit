@@ -3,6 +3,8 @@ package trigger
 import (
 	"fmt"
 	"testing"
+
+	"github.com/lertrel/goforit/builder"
 )
 
 func triggerListForTest() []Trigger {
@@ -280,5 +282,119 @@ func TestSimpleLookupTriggersEmpty(t *testing.T) {
 	_ = i.Next()
 
 	t.Errorf("This line should not be executed")
+
+}
+
+func newConfigForTest() []FormulaConfig {
+
+	return []FormulaConfig{
+		{ID: "Formula 1"},
+		{ID: "Formula 3"},
+		{ID: "Formula 5"},
+		{ID: "Formula 2"},
+		{ID: "Formula 4"},
+	}
+}
+
+func TestNewSimpleFormulaLookup(t *testing.T) {
+
+	s := NewSimpleFormulaLookup(
+		newConfigForTest(),
+		builder.NewFormulaBuilder().Get(),
+	).(SimpleFormulaLookup)
+
+	i := 0
+	expected := "Formula 1"
+	actual := s.configs[i].ID
+
+	if expected != actual {
+		t.Errorf("s.configs[%d].ID - Expected %v but %v", i, expected, actual)
+	}
+
+	i++
+	expected = "Formula 2"
+	actual = s.configs[i].ID
+
+	if expected != actual {
+		t.Errorf("s.configs[%d].ID - Expected %v but %v", i, expected, actual)
+	}
+
+	i++
+	expected = "Formula 3"
+	actual = s.configs[i].ID
+
+	if expected != actual {
+		t.Errorf("s.configs[%d].ID - Expected %v but %v", i, expected, actual)
+	}
+
+	i++
+	expected = "Formula 4"
+	actual = s.configs[i].ID
+
+	if expected != actual {
+		t.Errorf("s.configs[%d].ID - Expected %v but %v", i, expected, actual)
+	}
+
+	i++
+	expected = "Formula 5"
+	actual = s.configs[i].ID
+
+	if expected != actual {
+		t.Errorf("s.configs[%d].ID - Expected %v but %v", i, expected, actual)
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("TestNewSimpleFormulaLookup -", r)
+		}
+	}()
+
+	i++
+	_ = s.configs[i]
+
+	t.Errorf("This line should not be executed")
+
+}
+
+func TestSimpleFormulaLookupGetFormulas(t *testing.T) {
+
+	s := NewSimpleFormulaLookup(
+		newConfigForTest(),
+		builder.NewFormulaBuilder().Get(),
+	).(SimpleFormulaLookup)
+
+	trigger := Trigger{Filter: "config.ID == 'Formula 5' || config.ID == 'Formula 3'"}
+
+	i, err := s.GetFormulars(trigger, nil)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+
+	fmt.Println(i)
+
+	if !i.HasNext() {
+		t.Error("i.HasNext() - should be true")
+	}
+
+	actual := i.Next().ID
+	expected := "Formula 3"
+	if expected != actual {
+		t.Errorf("i.HasNext() - Expected %v but %v", expected, actual)
+	}
+
+	if !i.HasNext() {
+		t.Error("i.HasNext() - should be true")
+	}
+
+	actual = i.Next().ID
+	expected = "Formula 5"
+	if expected != actual {
+		t.Errorf("i.HasNext() - Expected %v but %v", expected, actual)
+	}
+
+	if i.HasNext() {
+		t.Error("i.HasNext() - should be false")
+	}
 
 }

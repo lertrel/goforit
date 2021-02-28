@@ -57,8 +57,8 @@ func (ml mockFormulaLookup) GetFormula(id string) (FormulaConfig, error) {
 	panic("")
 }
 
-//GetAllFormulas getting all FormulaConfig(s)
-func (ml mockFormulaLookup) GetAllFormulas() (FormulaIterator, error) {
+//Formulas getting all FormulaConfig(s)
+func (ml mockFormulaLookup) Formulas() (FormulaIterator, error) {
 	panic("")
 }
 
