@@ -1,5 +1,7 @@
-github.com/lertrel/goforit v0.0.0-20210223080248-70438d271032 h1:vm1xijkE7k79cIRzD46kvb6AKM9kJW/EKh/exl+L2zM=
-github.com/lertrel/goforit v0.0.0-20210223080248-70438d271032/go.mod h1:SSoog25PV1AoXOl4x3lw+O71dzW/StDg86dtezX4tjk=
+github.com/lertrel/goforit v0.0.0-20210226151930-9416b8f726ca h1:qvk176hQFhflB873l7wAC6EjkpSVxT+yvDcShU/9cdE=
+github.com/lertrel/goforit v0.0.0-20210226151930-9416b8f726ca/go.mod h1:SSoog25PV1AoXOl4x3lw+O71dzW/StDg86dtezX4tjk=
+github.com/lertrel/goforit v0.0.0-20210228153920-537ea3196d0a h1:gh+SsMeyQw7yyxV2B3DmfE7rKn7PkgIP6AS4FpJMI98=
+github.com/lertrel/goforit v0.0.0-20210228153920-537ea3196d0a/go.mod h1:SSoog25PV1AoXOl4x3lw+O71dzW/StDg86dtezX4tjk=
 github.com/robertkrimen/otto v0.0.0-20200922221731-ef014fd054ac h1:kYPjbEN6YPYWWHI6ky1J813KzIq/8+Wg4TO4xU7A/KU=
 github.com/robertkrimen/otto v0.0.0-20200922221731-ef014fd054ac/go.mod h1:xvqspoSXJTIpemEonrMDFq6XzwHYYgToXWj5eRX1OtY=
 gopkg.in/sourcemap.v1 v1.0.5 h1:inv58fC9f9J3TK2Y2R1NPntXEn3/wjWHkonhIUODNTI=

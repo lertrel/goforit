@@ -8,12 +8,12 @@ import (
 
 func main() {
 
-	f := goforit.GetFormulaBuilder().Get()
+	f := goforit.NewFormulaBuilder().Get()
 
 	str := `
 $SUMI(x, 2*x, 3*x, 4*x) + x
 `
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		panic(err)
 	}
