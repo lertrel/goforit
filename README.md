@@ -20,7 +20,7 @@ import (
 func main() {
 
 	//Creating Formula instance
-	f := goforit.GetFormularBuilder().Get()
+	f := goforit.NewFormulaBuilder().Get()
 
 //$SUMI is a built-in function
 str := `
