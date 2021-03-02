@@ -17,13 +17,13 @@ The benefit of having formula(s) externalized is, for program that extensively u
 - Formulas can be frequently adding or changing, or
 - Needing non-programmer business specialist to develop some formulars, or
 - Wanting to share common formulas across multiple programs, or
-- Bascially, any good other reasons to have formulas / calculation logics externalized from program
+- Bascially, any other good reasons to have formulas / calculation logics externalized from program
 
 **When shouldn't?**
 
 - _Program is too small_ to bother or logic is too straight forward or rarely changed
 - _Performance_ of scripting language (e.g., JavaScript) is not acceptable
-- _Extreme data analytic_, though it's something to do with formual, Go-For-It was designed for formula management (configuring, editing, dicovering, and exeucting) but not intended to be providing powerful formulas.
+- _Extreme data analytic_, though it's something to do with formual, Go-For-It was designed for formula management (configuring, editing, dicovering, and exeucting) but not intended to be providing powerful formulas as part of the shipment
 - _Existing JavaScript libraries_ are needed. There are plenty of sophisticated and powerful JavaScript libraries out there, but loading and parsing entire or multiple libraries in Go are something you should think twice, and you might want to consider using Nodes.js instead.
 
 **NOTE** The current implementation is built on top of "otto"
@@ -280,26 +280,24 @@ function $PRICE(_product, qty, discountType, payType, orderDate_)
 
 function $DAMAGE_POINTS(_attakcer, target, attack, times, distance_)
 
-There are 2 types for functions.
+There are 3 types for functions.
 #### 1.1 Built-in function
 
     Built-in functions are functions implemented in Go and registered to the underlying scripting VM/engine so they can be accessed by scripting language.
 
 	The advantange of using built-in functions is, they are run faster and do not required to be loaded and parsed by the underlying scripting VM/engine.
 
-	And as they are written in Go, so they are abstract logic that expected to be working on different scripting launuage.
+	And as they are written in Go, so they are abstract logic that expected to be working on different scripting launuages.
 
 	**Full list of supported built-in functions** are provided at the end of this document.
 
 	To create additional built-in functions, see BuiltInFunctions section 
 
-	To implement a VM, developer has to directly interact with the native API of the underlying scripting VM/engine (e.g., Otto) instead of abstract layers provided by Go-For-It.
-
 #### 1.2 Custom function
 
     In contrast to built-in function, a custom function is written in a specific scripting language (e.g, JavaScript), registered into Formula component, and lastly loaded into FormulaContext at runtime.
 
-	As custom function is done by scripting language, so it is neitgher required to be compiled or shipped together with your go program. Moreover any developers with some scripting language (e.g., JavaScript) could easily create new custom functions to satisfy every changing business requirements of your customer or organization.
+	As custom function is done by scripting language, so it is neitgher required to be compiled or shipped together with your go program. Moreover any developers with some scripting language skill (e.g., JavaScript) could easily create new custom functions to satisfy every changing business requirements of your customer or organization.
 
 #### 1.3 Pre-defined JavaScript function
     What is it?
@@ -308,11 +306,13 @@ There are 2 types for functions.
 
 	Why?
 
-	Though quite rarely but some kind of functions are easier to be written in JavaScript.
+	Though quite rarely but some kind of COMMON functions are easier to be written in JavaScript.
 
-	For exampels $SUM(), since Go is a type-safe language, so to write $SUM() that support both int/float and returning int or float depending on the given parameters in Go will be too complex comparing to its benefit, but writting this kind of function in JavaScript is pretty easy as JavaScript has no explicit type.
+	For examples $SUM(), since Go is a type-safe language, so to write $SUM() that support both int/float and returning int or float depending on the given parameters in Go will be too complex comparing to its benefit, but writting this kind of function in JavaScript is pretty easy as JavaScript has no explicit type.
 
 	Some functions are a wrapper of JavaScript existing functions like Math.*, etc. so they are provided as interim solutions before having their built-in functions counterparts.
+
+	Lastly rich set of pre-defined functions would save developers/specialists/users times for creating common stuff so they can utilize their time to develop business specific logic instead.
 
 	How?
 
@@ -351,14 +351,15 @@ There are 2 types for functions.
 > (What's the difference???)
 >
 > Function characteristics
-> - is a complex or long script -- for computing or creating desirable result -- that's not easy to be re-written thus it's should be prepared in separately advance (e.g., finding list of states/provinces in the country from which selling some your products is forbidden)
-> - could be common enough to be shared among programs or modules (e.g., SUM, rounding, etc)
-> - some of the functions, could not be implemented or it's not easly to be implemented using scripting language (such as excessing DB or API). This type of functions are required to be implemented built-in functions (as there's no built-in formula in Go-For-It)
+> - is a **COMPLEX** or **LONG** script -- **FOR DETAILS COMPUTING** or creating desirable result -- that's not easy to be re-written thus it's should be prepared separately in advance (e.g., finding list of states/provinces in the country from which selling some your products are forbidden)
+> - could be **COMMON** enough to be shared among programs or modules (e.g., SUM, rounding, etc)
+> - some of the functions, **COULD NOT BE IMPLEMENTED** or it's not easly to be implemented **USING SCRIPTING LANGUAGE** (such as excessing DB, API, or low level operations). This type of functions are required to be implemented as built-in functions (as there's no built-in formula in Go-For-It)
+> - **BEING CALLED BY FORMULA(s)**
 >
 > Formula characteristics
-> - is a concise script usually describing steps to produce a result in regards business requirement in question like calculating product pricing baused on given inputs, calculating age of a person, calculating applicable tax etc.
-> - usually calls function(s)
-> - can be called by a trigger
+> - is a more **CONCISE** script usually **DESCRIBING STEPS** to produce a result in regards **SPECIFIC** business requirement in question like calculating product pricing baused on given inputs, calculating age of a person, calculating applicable tax etc.
+> - usually **CALLS FUNCTION(s)**
+> - can **BE CALLED BY A TRIGGER**
 >
 > Program -- calls --> Formula -- calls --> functions
 
@@ -397,6 +398,7 @@ There are 2 types for functions.
 
 ### 7. BuiltinFunctions
 ### 8. VMDriver / VM
+	To implement a VM, developer has to directly interact with the native API of the underlying scripting VM/engine (e.g., Otto) instead of abstract layers provided by Go-For-It.
 
 ## Appendix
 
