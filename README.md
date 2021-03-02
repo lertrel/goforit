@@ -1,10 +1,30 @@
 # goforit
 ## Introduction
+
+**What is Go-For-It?**
+
 A pure go package for enabling runtime customization formulas for Go utilizing JavaScript package. 
 
 With Go-For-It package, developers can externalize program formula(s) (e.g., in text file, csv, excel file, DB, etc.) and load them during runtime. 
 
-The benefit of having formula(s) externalized is, for program that extensively uses formula(s) so numbers of formula(s) can be maintained outside of source code which in turn making the source code more cleaner, adding/changing formula can be done without stopping the running program, as well as complex formula(s) could be handled by specialists (a.k.a. users).  
+**Why would it might be needed?**
+
+The benefit of having formula(s) externalized is, for program that extensively uses formula(s) so numbers of formula(s) can be maintained outside of source code which in turn making the source code more cleaner, adding/changing formula can be done without stopping the running program, as well as complex formula(s) could be handled by specialists (a.k.a. users).
+
+**When should be considering using (Go-For-)it?**
+
+- Having many formulas to manage / discover, or
+- Formulas can be frequently adding or changing, or
+- Needing non-programmer business specialist to develop some formulars, or
+- Wanting to share common formulas across multiple programs, or
+- Bascially, any good other reasons to have formulas / calculation logics externalized from program
+
+**When shouldn't?**
+
+- _Program is too small_ to bother or logic is too straight forward or rarely changed
+- _Performance_ of scripting language (e.g., JavaScript) is not acceptable
+- _Extreme data analytic_, though it's something to do with formual, Go-For-It was designed for formula management (configuring, editing, dicovering, and exeucting) but not intended to be providing powerful formulas.
+- _Existing JavaScript libraries_ are needed. There are plenty of sophisticated and powerful JavaScript libraries out there, but loading and parsing entire or multiple libraries in Go are something you should think twice, and you might want to consider using Nodes.js instead.
 
 **NOTE** The current implementation is built on top of "otto"
 
@@ -250,12 +270,24 @@ Following sections are general idea to the main components of Go-For-It.
 
 ## [Basic]
 ### 1. Functions
-Thinking of a function as an excel function like SUM() for examples. There are 2 types for functions.
+Thinking of a function as an excel function like SUM() for examples.
+
+For performance sake, function _must_ start with '$', and conventionally all letters should be captital, word separater is optional, but should be '_'
+
+Ex.
+
+function $PRICE(_product, qty, discountType, payType, orderDate_)
+
+function $DAMAGE_POINTS(_attakcer, target, attack, times, distance_)
+
+There are 2 types for functions.
 #### 1.1 Built-in function
 
     Built-in functions are functions implemented in Go and registered to the underlying scripting VM/engine so they can be accessed by scripting language.
 
 	The advantange of using built-in functions is, they are run faster and do not required to be loaded and parsed by the underlying scripting VM/engine.
+
+	And as they are written in Go, so they are abstract logic that expected to be working on different scripting launuage.
 
 	**Full list of supported built-in functions** are provided at the end of this document.
 
@@ -265,10 +297,35 @@ Thinking of a function as an excel function like SUM() for examples. There are 2
 
 #### 1.2 Custom function
 
-    In contrast to built-in function, a custom function is written in scripting language (e.g, JavaScript), registered into Formula, and lastly loaded into FormulaContext at runtime.
+    In contrast to built-in function, a custom function is written in a specific scripting language (e.g, JavaScript), registered into Formula component, and lastly loaded into FormulaContext at runtime.
 
 	As custom function is done by scripting language, so it is neitgher required to be compiled or shipped together with your go program. Moreover any developers with some scripting language (e.g., JavaScript) could easily create new custom functions to satisfy every changing business requirements of your customer or organization.
 
+#### 1.3 Pre-defined JavaScript function
+    What is it?
+
+	Pre-defined JavaScript functions are also custom functions as they were written in scripting language (i.e., JavaScript) thus they will only work for JavaScript engine whereas built-in functions are more abstract and will work for any scripting VM/engine of choice.
+
+	Why?
+
+	Though quite rarely but some kind of functions are easier to be written in JavaScript.
+
+	For exampels $SUM(), since Go is a type-safe language, so to write $SUM() that support both int/float and returning int or float depending on the given parameters in Go will be too complex comparing to its benefit, but writting this kind of function in JavaScript is pretty easy as JavaScript has no explicit type.
+
+	Some functions are a wrapper of JavaScript existing functions like Math.*, etc. so they are provided as interim solutions before having their built-in functions counterparts.
+
+	How?
+
+	To use pre-defined JavaScript functions, one just has to add concrete implementation of (pre-built) CustomFunctionRepo(s) shipped with Go-For-It to a Formula component
+
+	When?
+
+	Before creating FormulaContext 
+	
+	Where?
+	
+	The pre-defined CustomFunctionRepo(s) are Under the subpackage "js"
+	 
 ### 2. Formula
 
     Here a tricky one! As a center of Go-For-It core concepts, the term formula could refer to several things.
@@ -285,7 +342,7 @@ Thinking of a function as an excel function like SUM() for examples. There are 2
 
 	FormulaConfig(s) are pre-configured in advance of running the program, and will be loaded during runtime through FormulaLookup.
 
-#### 2.3 Formula
+#### 2.3 Formula Component
 
     An API component "Formula" (obtained from FormulaBuilder) for executing formulas and functions, and also used for creating a FormulaContext
 
@@ -346,19 +403,83 @@ Thinking of a function as an excel function like SUM() for examples. There are 2
 ### List of Built-in Functions
 
 - $ABS
-- $RND
-- $FLOOR or $FLR
-- $CEIL
-- $IF
-- $SUMI
-- $SUMF
 - $AVG
-- $MIN
+- $CEIL
+- $FLOOR or $FLR
+- $IF
 - $MAX
+- $MIN
+- $RND
+- $SUMF
+- $SUMI
+- ...
 
-#### $ABS(value)
+##### $ABS ( _value_ )
     Returning and absolute (positive only) of the given value
 
 	Ex.
 	$ABS(1) // 1
 	$ABS(-1.0) // 1.0
+##### $AVG ( _float1, float2, ..._ )
+    Returning a average of the given floats
+
+	Ex.
+	$AVG(1.0, 2.5, 3.0, 4.5, 5.5) //3.3
+	$AVG(price1, price2, price3, price4)
+##### $CEIL ( _value, precision_ )
+    Returning a round-up value the given value with the precision as given
+
+	Ex.
+	$CEIL(1.5, 0) // 2
+	$CEIL(1.4, 0) // 2
+	$CEIL(1.445, 2) // 1.45
+	$CEIL(1.445, 1) // 1.5
+##### $FLR ( _value, precision_ )
+##### $FLOOR ( _value, precision_ )
+    Returning a round-down value the given value with the precision as given
+
+	Ex.
+	$FLR(1.5, 0) // 1
+	$FLR(1.4, 0) // 1
+	$FLR(1.445, 2) // 1.44
+	$FLR(1.445, 1) // 1.4
+##### $IF ( _condition, value1, value2_ )
+    Returning a value1 if the given condition is true otherwise returning value2
+
+	Ex.
+	$IF(gender == "M", 200, 150)
+	$IF(year > 2020, $NEWPRICE(), $OLDPRICE())
+##### $MAX ( _float1, float2, ..._ )
+    Returning the maximum value among the given floats
+
+	Ex.
+	$MIN(1.0, 2.5, 3.0, 4.5, 5.5) //5.5
+	$MIN(price1, price2, price3, price4)
+##### $MIN ( _float1, float2, ..._ )
+    Returning the minimum value among the given floats
+
+	Ex.
+	$MIN(1.0, 2.5, 3.0, 4.5, 5.5) //1.0
+	$MIN(price1, price2, price3, price4)
+##### $RND ( _value, precision_ )
+    Returning a (normal) rounded value the given value with the precision as given
+
+	Ex.
+	$RND(1.5, 0) // 2
+	$RND(1.4, 0) // 1
+	$RND(1.445, 2) // 1.45
+	$RND(1.445, 1) // 1.4
+##### $SUMF ( _float1, float2, ..._ )
+    Returning a result of summing the given floats
+
+	Ex.
+	$SUMI(1.0, 2.5, 3.0, 4.5, 5.5) //16.5
+	$SUMI(price1, price2, price3, price4)
+##### $SUMI ( _integer1, integer2, ..._ )
+    Returning a result of summing the given integers
+
+	Ex.
+	$SUMI(1, 2, 3, 4, 5) //15
+	$SUMI(count1, count2, count3, count4)
+
+**<< MORE TO COME >>**
