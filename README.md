@@ -50,7 +50,7 @@ str := `
 $SUMI(x, 2*x, 3*x, 4*x) + x
 `
   //Loading denpendencies (functions) into context instance
-	c, err := f.LoadContext(nil, str)
+	c, err := f.NewContext(str)
 	if err != nil {
 		panic(err)
 	}
